@@ -10,7 +10,7 @@ branches:
     - master
 
 env:
-  - CODECOV_TOKEN="fe7c0e80-b628-4d23-873a-a3a743b7afe4"
+  - CODECOV_TOKEN="08fa8536-6220-46c7-a12a-4b8c19566fc4"
 
 before_install:
   - npm i -g npm
