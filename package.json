@@ -1,0 +1,71 @@
+{
+    "name": "use-long-press",
+    "version": "1.0.0",
+    "description": "React hook for detecting click (or tap) and hold event",
+    "author": "minwork",
+    "license": "MIT",
+    "keywords": [
+        "react",
+        "hook",
+        "use",
+        "tap",
+        "double tap"
+    ],
+    "repository": "https://github.com/minwork/use-long-press",
+    "main": "dist/index.js",
+    "source": "src/index.ts",
+    "types": "dist/index.d.ts",
+    "files": [
+        "dist/*"
+    ],
+    "engines": {
+        "node": ">=8",
+        "npm": ">=5"
+    },
+    "scripts": {
+        "build": "rimraf dist/* && microbundle -f cjs --tsconfig tsconfig.build.json && rimraf dist/*test*",
+        "test": "jest",
+        "start": "microbundle watch"
+    },
+    "babel": {
+        "presets": [
+            "@babel/preset-typescript",
+            "@babel/preset-react",
+            "@babel/preset-env"
+        ],
+        "plugins": [
+            "@babel/transform-runtime"
+        ]
+    },
+    "dependencies": {},
+    "peerDependencies": {
+        "react": "^16.8.0"
+    },
+    "devDependencies": {
+        "@babel/core": "^7.2.2",
+        "@babel/plugin-transform-runtime": "^7.6.0",
+        "@babel/preset-env": "^7.6.0",
+        "@babel/preset-typescript": "^7.6.0",
+        "@babel/runtime": "^7.6.0",
+        "@testing-library/jest-dom": "^5.5.0",
+        "@testing-library/react": "^9.1.4",
+        "@testing-library/react-hooks": "^2.0.1",
+        "@types/enzyme": "^3.10.5",
+        "@types/enzyme-adapter-react-16": "^1.0.6",
+        "@types/jest": "^23.3.13",
+        "@types/react": "^16.7.22",
+        "babel-preset-react": "^6.24.1",
+        "cross-env": "^5.2.0",
+        "enzyme": "^3.11.0",
+        "enzyme-adapter-react-16": "^1.15.2",
+        "jest": "^24.9.0",
+        "microbundle": "^0.11.0",
+        "prettier": "^1.18.2",
+        "react": "^16.9.0",
+        "react-dom": "^16.13.1",
+        "react-scripts": "^3.4.1",
+        "react-test-renderer": "^16.13.1",
+        "rimraf": "^3.0.0",
+        "typescript": "^3.2.4"
+    }
+}
