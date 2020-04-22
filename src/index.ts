@@ -81,6 +81,7 @@ export function useLongPress<
     }: LongPressOptions<Target> = {}
 ): LongPressResult<Target, Callback, typeof detect> | {} {
     const isLongPressActive = useRef(false);
+    const isPressed = useRef(false);
     const timer = useRef<NodeJS.Timeout>();
     const savedCallback = useRef(callback);
 
@@ -91,6 +92,7 @@ export function useLongPress<
             }
             // When touched trigger onStart and start timer
             captureEvent ? onStart(event) : onStart();
+            isPressed.current = true;
             timer.current = setTimeout(() => {
                 if (savedCallback.current) {
                     captureEvent ? savedCallback.current(event) : savedCallback.current();
@@ -109,11 +111,12 @@ export function useLongPress<
             // Trigger onFinish callback only if timer was active
             if (isLongPressActive.current) {
                 captureEvent ? onFinish(event) : onFinish();
-            } else {
+            } else if (isPressed.current) {
                 // Otherwise if not active trigger onCancel
                 captureEvent ? onCancel(event) : onCancel();
             }
             isLongPressActive.current = false;
+            isPressed.current = false;
             timer.current !== undefined && clearTimeout(timer.current);
         },
         [captureEvent, onFinish, onCancel]
