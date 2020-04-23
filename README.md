@@ -53,7 +53,7 @@ Callback can be either function or `null` if you want to disable the hook.
 
 Additionally hook accepts options object as a second argument.
 ```typescript
-useLongPress(callback: (event?: MouseEvent | TouchEvent) => void | null, options?: LongPressOptions);
+useLongPress(callback: ((event?: MouseEvent | TouchEvent) => void) | null, options?: LongPressOptions);
 ```
 ### Options
 Long press hook can be adjusted using options object, which allow you to fit it to your needs.
