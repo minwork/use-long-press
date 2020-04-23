@@ -49,21 +49,20 @@ const Example = () => {
 [![Edit useLongPress](https://codesandbox.io/static/img/play-codesandbox.svg)](https://codesandbox.io/s/uselongpress-gnej6?fontsize=14&hidenavigation=1&theme=dark)
 
 ## Advanced usage
-
-### Callback
 Callback can be either function or `null` if you want to disable the hook.
-```
-useLongPress(null);
-```
 
+Additionally hook accepts options object as a second argument.
+```typescript
+useLongPress(callback: (event?: MouseEvent | TouchEvent) => void | null, options?: LongPressOptions);
+```
 ### Options
-Long press hook can be adjusted using options object, which allow you to fit this hook to your needs.
+Long press hook can be adjusted using options object, which allow you to fit it to your needs.
 
 | Name | Type | Default | Description |
 | ---- |:----:|:-------:|:-----------|
 |threshold|number|400|Time user need to hold click or tap before long press *callback* is triggered|
 |captureEvent|boolean|false|If React MouseEvent (or TouchEvent) should be supplied as first argument to callbacks|
-|detect|Enum(mouse &#x7c; touch &#x7c; both)|both|Which event handlers should be returned in `bind` object. In TS this enum is accessible as `LongPressDetectEvents`|
+|detect|Enum('mouse' &#x7c; 'touch' &#x7c; 'both')|'both'|Which event handlers should be returned in `bind` object. In TS this enum is accessible through `LongPressDetectEvents`|
 |onStart|Function|() => {}|Called when element is initially pressed (before starting timer which detects long press).<br><br>Can accept mouse or touch event if *captureEvents* option is set to `true`.|
 |onFinish|Function|() => {}|Called when press is released (after triggering *callback*).<br><br>Can accept mouse or touch event if *captureEvents* option is set to `true`.|
 |onCancel|Function|() => {}|Called when press is released before *threshold* time elapses, therefore before long press occurs.<br><br>Can accept mouse or touch event if *captureEvents* option is set to `true`.|
