@@ -1,6 +1,14 @@
-import { MouseEvent, MouseEventHandler, TouchEvent, TouchEventHandler, useCallback, useEffect, useRef } from 'react';
+import {
+    MouseEvent,
+    MouseEventHandler,
+    TouchEvent,
+    TouchEventHandler,
+    useCallback,
+    useEffect,
+    useRef,
+} from 'react';
 
-const noop = () => {};
+const noop = (): void => {};
 
 export type LongPressEvent<Target = Element> = MouseEvent<Target> | TouchEvent<Target>;
 export type LongPressCallback<Target = Element> = (event?: LongPressEvent<Target>) => void;
@@ -56,14 +64,25 @@ export function useLongPress<
 /**
  * Detect click / tap and hold event
  *
- * @param callback <p>Function to call when long press event is detected (click or tap lasts for <i>threshold</i> amount of time or longer)<p>
+ * @param callback <p>
+ *   Function to call when long press event is detected
+ *   (click or tap lasts for <i>threshold</i> amount of time or longer)
+ *   </p>
  * @param options <ul>
- * <li><b>threshold</b> - Period of time that must elapse after detecting click or tap in order to trigger <i>callback</i></li>
- * <li><b>captureEvent</b> - If React Event will be supplied as first argument to all callbacks</li>
- * <li><b>detect</b> - Which type of events should be detected ('mouse' | 'touch' | 'both' )
- * <li><b>onStart</b> - Called right after detecting click / tap event (e.g. onMouseDown or onTouchStart)
- * <li><b>onFinish</b> - Called (if long press <u>was triggered</u>) on releasing click or tap (e.g. onMouseUp, onMouseLeave or onTouchEnd)
- * <li><b>onCancel</b> - Called (if long press <u>was <b>not</b> triggered</u>) on releasing click or tap (e.g. onMouseUp, onMouseLeave or onTouchEnd)
+ * <li><b>threshold</b>
+ * - Period of time that must elapse after detecting click or tap in order to trigger <i>callback</i></li>
+ * <li><b>captureEvent</b>
+ * - If React Event will be supplied as first argument to all callbacks</li>
+ * <li><b>detect</b>
+ * - Which type of events should be detected ('mouse' | 'touch' | 'both' )
+ * <li><b>onStart</b>
+ * - Called right after detecting click / tap event (e.g. onMouseDown or onTouchStart)
+ * <li><b>onFinish</b>
+ * - Called (if long press <u>was triggered</u>)
+ * on releasing click or tap (e.g. onMouseUp, onMouseLeave or onTouchEnd)
+ * <li><b>onCancel</b>
+ * - Called (if long press <u>was <b>not</b> triggered</u>)
+ * on releasing click or tap (e.g. onMouseUp, onMouseLeave or onTouchEnd)
  * </ul>
  */
 export function useLongPress<
@@ -122,12 +141,13 @@ export function useLongPress<
         [captureEvent, onFinish, onCancel]
     );
 
-    useEffect(() => {
-        return () => {
+    useEffect(
+        () => (): void => {
             // Clear timeout on unmount
             timer.current !== undefined && clearTimeout(timer.current);
-        };
-    }, []);
+        },
+        []
+    );
 
     useEffect(() => {
         savedCallback.current = callback;
@@ -144,9 +164,11 @@ export function useLongPress<
         onTouchEnd: cancel as TouchEventHandler<Target>,
     };
 
+    // eslint-disable-next-line no-nested-ternary
     return callback === null
         ? {}
-        : detect === LongPressDetectEvents.MOUSE
+        : // eslint-disable-next-line no-nested-ternary
+        detect === LongPressDetectEvents.MOUSE
         ? mouseHandlers
         : detect === LongPressDetectEvents.TOUCH
         ? touchHandlers
