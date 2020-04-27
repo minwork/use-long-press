@@ -1,8 +1,8 @@
 import React from 'react';
-import { LongPressCallback, LongPressDetectEvents, useLongPress } from '../index';
+import { LongPressCallback, LongPressDetectEvents, useLongPress } from '../src';
 import { renderHook } from '@testing-library/react-hooks';
-import { createMountedTestComponent, createShallowTestComponent, TestComponent } from '../tests/TestComponent';
-import { mockEvent } from '../tests/utils';
+import { createMountedTestComponent, createShallowTestComponent, TestComponent } from './TestComponent';
+import { mockEvent } from './utils';
 import { act } from 'react-dom/test-utils';
 
 describe('Check isolated hook calls', () => {

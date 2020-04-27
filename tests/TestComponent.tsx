@@ -1,5 +1,5 @@
 import React, { HTMLAttributes } from 'react';
-import { LongPressCallback, LongPressOptions, useLongPress } from '../index';
+import { LongPressCallback, LongPressOptions, useLongPress } from '../src';
 import { mount, shallow } from 'enzyme';
 
 export interface TestComponentProps extends LongPressOptions {

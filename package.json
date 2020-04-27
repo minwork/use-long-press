@@ -23,7 +23,7 @@
         "npm": ">=5"
     },
     "scripts": {
-        "build": "rimraf dist/* && microbundle -f cjs --tsconfig tsconfig.build.json && rimraf dist/*test*",
+        "build": "rimraf dist/* && microbundle -f cjs --tsconfig tsconfig.build.json",
         "test": "jest",
         "start": "microbundle watch"
     },
