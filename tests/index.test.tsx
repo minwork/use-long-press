@@ -1,9 +1,9 @@
 import React from 'react';
-import { LongPressCallback, LongPressDetectEvents, useLongPress } from '../src';
 import { renderHook } from '@testing-library/react-hooks';
-import { createMountedTestComponent, createShallowTestComponent, TestComponent } from './TestComponent';
-import { mockEvent } from './utils';
 import { act } from 'react-dom/test-utils';
+import { mockEvent } from './utils';
+import { LongPressCallback, LongPressDetectEvents, useLongPress } from '../src';
+import { createMountedTestComponent, createShallowTestComponent } from './TestComponent';
 
 describe('Check isolated hook calls', () => {
     test('Return empty object when callback is null', () => {
@@ -403,17 +403,17 @@ describe('Test general hook behaviour inside a component', () => {
     });
 
     test('Cancel event is not called simply on mouse leave', () => {
-      const mouseEvent = mockEvent<React.MouseEvent>();
-      const callback = jest.fn();
-      const onCancel = jest.fn();
-      const component = createShallowTestComponent({ callback, onCancel });
+        const mouseEvent = mockEvent<React.MouseEvent>();
+        const callback = jest.fn();
+        const onCancel = jest.fn();
+        const component = createShallowTestComponent({ callback, onCancel });
 
-      component.props().onMouseLeave(mouseEvent);
-      component.props().onMouseDown(mouseEvent);
-      jest.runOnlyPendingTimers();
-      component.props().onMouseUp(mouseEvent);
-      component.props().onMouseLeave(mouseEvent);
+        component.props().onMouseLeave(mouseEvent);
+        component.props().onMouseDown(mouseEvent);
+        jest.runOnlyPendingTimers();
+        component.props().onMouseUp(mouseEvent);
+        component.props().onMouseLeave(mouseEvent);
 
-      expect(onCancel).toBeCalledTimes(0);
+        expect(onCancel).toBeCalledTimes(0);
     });
 });
