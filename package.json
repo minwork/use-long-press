@@ -1,6 +1,6 @@
 {
     "name": "use-long-press",
-    "version": "1.0.2",
+    "version": "1.0.3",
     "description": "React hook for detecting click (or tap) and hold event. Easy to use, highly customizable options, thoroughly tested.",
     "author": "minwork",
     "license": "MIT",
@@ -40,6 +40,7 @@
     },
     "scripts": {
         "build": "rimraf dist/* && microbundle --jsx React.createElement --external react --name useLongPress --output dist/index.js",
+        "deploy": "yarn test && yarn build && npm publish",
         "test": "jest",
         "start": "microbundle watch",
         "lint": "eslint src tests --ext .ts,.tsx"
