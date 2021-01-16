@@ -106,6 +106,10 @@ export function useLongPress<
 
     const start = useCallback(
         (event: LongPressEvent<Target>) => {
+            // Prevent multiple start triggers
+            if (isPressed.current) {
+                return;
+            }
             if (captureEvent) {
                 event.persist();
             }

@@ -283,13 +283,60 @@ describe('Check appropriate behaviour considering supplied hook options', () => 
         const touchEvent = mockEvent<React.TouchEvent>();
         const mouseEvent = mockEvent<React.MouseEvent>();
         const callback = jest.fn();
-        const component = createShallowTestComponent({ callback });
+        const component = createShallowTestComponent({ callback, detect: LongPressDetectEvents.BOTH });
 
         component.props().onTouchStart(touchEvent);
         jest.runOnlyPendingTimers();
         component.props().onMouseLeave(mouseEvent);
 
         expect(callback).toBeCalledTimes(1);
+    });
+
+    test('Triggering multiple events simultaneously does not trigger onStart and callback twice when using detect both option', () => {
+        const touchEvent = mockEvent<React.TouchEvent>();
+        const mouseEvent = mockEvent<React.MouseEvent>();
+        const callback = jest.fn();
+        const onStart = jest.fn();
+        const onFinish = jest.fn();
+        const component = createShallowTestComponent({
+            callback,
+            detect: LongPressDetectEvents.BOTH,
+            onStart,
+            onFinish,
+        });
+
+        component.props().onMouseDown(mouseEvent);
+        component.props().onTouchStart(touchEvent);
+        expect(onStart).toBeCalledTimes(1);
+        jest.runOnlyPendingTimers();
+        component.props().onMouseLeave(mouseEvent);
+        component.props().onMouseUp(mouseEvent);
+        component.props().onTouchEnd(touchEvent);
+        expect(callback).toBeCalledTimes(1);
+        expect(onFinish).toBeCalledTimes(1);
+    });
+
+    test('Triggering multiple events simultaneously does not trigger onLeave and callback twice when using detect both option', () => {
+        const touchEvent = mockEvent<React.TouchEvent>();
+        const mouseEvent = mockEvent<React.MouseEvent>();
+        const callback = jest.fn();
+        const onStart = jest.fn();
+        const onCancel = jest.fn();
+        const component = createShallowTestComponent({
+            callback,
+            detect: LongPressDetectEvents.BOTH,
+            onStart,
+            onCancel,
+        });
+
+        component.props().onMouseDown(mouseEvent);
+        component.props().onTouchStart(touchEvent);
+        expect(onStart).toBeCalledTimes(1);
+        component.props().onMouseLeave(mouseEvent);
+        component.props().onMouseUp(mouseEvent);
+        component.props().onTouchEnd(touchEvent);
+        expect(callback).toBeCalledTimes(0);
+        expect(onCancel).toBeCalledTimes(1);
     });
 });
 
