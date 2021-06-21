@@ -1,13 +1,5 @@
 import React from 'react';
 
-export function mockEvent<EventType extends React.SyntheticEvent = React.SyntheticEvent>(
-  props?: Partial<EventType>
-): EventType {
-  return {
-    ...props,
-  } as EventType;
-}
-
 export function mockTouchEvent<EventType extends React.TouchEvent = React.TouchEvent>(
   props?: Partial<EventType>
 ): EventType {
