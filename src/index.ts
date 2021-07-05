@@ -8,7 +8,6 @@ import {
   useRef,
 } from 'react';
 
-const noop = (): void => {};
 function isTouchEvent<Target>(event: LongPressEvent<Target>): event is ReactTouchEvent<Target> {
   return event.nativeEvent instanceof TouchEvent;
 }
@@ -84,6 +83,7 @@ export interface LongPressOptions<Target = Element> {
   detect?: LongPressDetectEvents;
   cancelOnMovement?: boolean | number;
   onStart?: LongPressCallback<Target>;
+  onMove?: LongPressCallback<Target>;
   onFinish?: LongPressCallback<Target>;
   onCancel?: LongPressCallback<Target>;
 }
@@ -137,9 +137,10 @@ export function useLongPress<
     captureEvent = false,
     detect = LongPressDetectEvents.BOTH,
     cancelOnMovement = false,
-    onStart = noop,
-    onFinish = noop,
-    onCancel = noop,
+    onStart,
+    onMove,
+    onFinish,
+    onCancel,
   }: LongPressOptions<Target> = {}
 ): LongPressResult<Target, Callback, typeof detect> | {} {
   const isLongPressActive = useRef(false);
@@ -167,7 +168,7 @@ export function useLongPress<
       }
 
       // When touched trigger onStart and start timer
-      captureEvent ? onStart(event) : onStart();
+      captureEvent ? onStart?.(event) : onStart?.();
       isPressed.current = true;
       timer.current = setTimeout(() => {
         if (savedCallback.current) {
@@ -194,10 +195,10 @@ export function useLongPress<
 
       // Trigger onFinish callback only if timer was active
       if (isLongPressActive.current) {
-        captureEvent ? onFinish(event) : onFinish();
+        captureEvent ? onFinish?.(event) : onFinish?.();
       } else if (isPressed.current) {
         // Otherwise if not active trigger onCancel
-        captureEvent ? onCancel(event) : onCancel();
+        captureEvent ? onCancel?.(event) : onCancel?.();
       }
       isLongPressActive.current = false;
       isPressed.current = false;
@@ -208,6 +209,7 @@ export function useLongPress<
 
   const handleMove = useCallback(
     (event: LongPressEvent<Target>) => {
+      captureEvent ? onMove?.(event) : onMove?.();
       if (cancelOnMovement && startPosition.current) {
         const currentPosition = getCurrentPosition(event);
         /* istanbul ignore else */
@@ -225,7 +227,7 @@ export function useLongPress<
         }
       }
     },
-    [cancel, cancelOnMovement]
+    [cancel, cancelOnMovement, captureEvent, onMove]
   );
 
   useEffect(

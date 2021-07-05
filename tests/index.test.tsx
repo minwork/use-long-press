@@ -224,6 +224,50 @@ describe('Detect long press and trigger appropriate handlers', () => {
 
     expect(onFinish).toHaveBeenCalledTimes(0);
   });
+
+  test('Detect and capture move event', () => {
+    const onMove = jest.fn();
+
+    let touchComponent = createShallowTestComponent({
+      callback: jest.fn(),
+      onMove,
+      captureEvent: true,
+      detect: LongPressDetectEvents.TOUCH,
+    });
+
+    touchComponent.props().onTouchMove(touchEvent);
+    expect(onMove).toHaveBeenCalledWith(touchEvent);
+
+    touchComponent = createShallowTestComponent({
+      callback: jest.fn(),
+      onMove,
+      captureEvent: false,
+      detect: LongPressDetectEvents.TOUCH,
+    });
+
+    touchComponent.props().onTouchMove(touchEvent);
+    expect(onMove).toHaveBeenCalledWith();
+
+    let mouseComponent = createShallowTestComponent({
+      callback: jest.fn(),
+      onMove,
+      captureEvent: true,
+      detect: LongPressDetectEvents.MOUSE,
+    });
+
+    mouseComponent.props().onMouseMove(mouseEvent);
+    expect(onMove).toHaveBeenCalledWith(mouseEvent);
+
+    mouseComponent = createShallowTestComponent({
+      callback: jest.fn(),
+      onMove,
+      captureEvent: false,
+      detect: LongPressDetectEvents.MOUSE,
+    });
+
+    mouseComponent.props().onMouseMove(mouseEvent);
+    expect(onMove).toHaveBeenCalledWith();
+  });
 });
 
 describe('Check appropriate behaviour considering supplied hook options', () => {
