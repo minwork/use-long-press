@@ -62,14 +62,16 @@ useLongPress(callback [, options]): handlers
 
 Long press hook can be adjusted using options object, which allow you to fit it to your needs.
 
-| Name         |                    Type                    |  Default  | Description                                                                                                                                                                           |
-| ------------ | :----------------------------------------: | :-------: | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| threshold    |                   number                   |    400    | Time user need to hold click or tap before long press _callback_ is triggered                                                                                                         |
-| captureEvent |                  boolean                   |   false   | If React MouseEvent (or TouchEvent) should be supplied as first argument to callbacks                                                                                                 |
-| detect       | Enum('mouse' &#x7c; 'touch' &#x7c; 'both') |  'both'   | Which event handlers should be returned in `bind` object. In TS this enum is accessible through `LongPressDetectEvents`                                                               |
-| onStart      |                  Function                  | undefined | Called when element is initially pressed (before starting timer which detects long press).<br><br>Can accept mouse or touch event if _captureEvents_ option is set to `true`.         |
-| onFinish     |                  Function                  | undefined | Called when press is released (after triggering _callback_).<br><br>Can accept mouse or touch event if _captureEvents_ option is set to `true`.                                       |
-| onCancel     |                  Function                  | undefined | Called when press is released before _threshold_ time elapses, therefore before long press occurs.<br><br>Can accept mouse or touch event if _captureEvents_ option is set to `true`. |
+| Name             |                    Type                    |  Default  | Description                                                                                                                                                                                                                            |
+| ---------------- | :----------------------------------------: | :-------: | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| threshold        |                   number                   |    400    | Time user need to hold click or tap before long press _callback_ is triggered                                                                                                                                                          |
+| captureEvent     |                  boolean                   |   false   | If React MouseEvent (or TouchEvent) should be supplied as first argument to callbacks                                                                                                                                                  |
+| detect           | Enum('mouse' &#x7c; 'touch' &#x7c; 'both') |  'both'   | Which event handlers should be returned in `bind` object. In TS this enum is accessible through `LongPressDetectEvents`                                                                                                                |
+| cancelOnMovement |           boolean &#x7c; number            |   false   | If long press should be cancelled when detected movement while pressing. Use _boolean_ value to turn it on / off or _number_ value to specify move tolerance in pixels.<br><br>For more information on how this prop work check JSDoc. |
+| onStart          |                  Function                  | undefined | Called when element is initially pressed (before starting timer which detects long press).<br><br>Can accept mouse or touch event if _captureEvents_ option is set to `true`.                                                          |
+| onFinish         |                  Function                  | undefined | Called when press is released (after triggering _callback_).<br><br>Can accept mouse or touch event if _captureEvents_ option is set to `true`.                                                                                        |
+| onCancel         |                  Function                  | undefined | Called when press is released before _threshold_ time elapses, therefore before long press occurs.<br><br>Can accept mouse or touch event if _captureEvents_ option is set to `true`.                                                  |
+| onMove           |                  Function                  | undefined | Handler for `onTouchMove` and `onMouseMove` props, also allowing to make some operations on event before triggering _cancelOnMovement_.<br><br>Can accept mouse or touch event if _captureEvents_ option is set to `true`.             |
 
 ### Example
 
@@ -86,8 +88,10 @@ export default function AdvancedExample() {
     onStart: event => console.log('Press started'),
     onFinish: event => console.log('Long press finished'),
     onCancel: event => console.log('Press cancelled'),
+    onMove: event => console.log('Detected mouse or touch movement'),
     threshold: 500,
     captureEvent: true,
+    cancelOnMovement: false,
     detect: 'both',
   });
 
