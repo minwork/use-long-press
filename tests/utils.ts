@@ -4,7 +4,7 @@ export function mockTouchEvent<EventType extends React.TouchEvent = React.TouchE
   props?: Partial<EventType>
 ): EventType {
   return {
-    nativeEvent: new TouchEvent('touch'),
+    nativeEvent: new window.TouchEvent('touch'),
     touches: ([{ pageX: 0, pageY: 0 }] as unknown) as React.TouchList,
     ...props,
   } as EventType;
@@ -14,7 +14,7 @@ export function mockMouseEvent<EventType extends React.MouseEvent = React.MouseE
   props?: Partial<EventType>
 ): EventType {
   return {
-    nativeEvent: new MouseEvent('mouse'),
+    nativeEvent: new window.MouseEvent('mouse'),
     pageX: 0,
     pageY: 0,
     ...props,

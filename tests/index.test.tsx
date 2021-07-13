@@ -1,4 +1,3 @@
-import React from 'react';
 import { renderHook } from '@testing-library/react-hooks';
 import { act } from 'react-dom/test-utils';
 import { mockMouseEvent, mockTouchEvent } from './utils';
@@ -142,7 +141,7 @@ describe('Detect long press and trigger appropriate handlers', () => {
     jest.clearAllMocks();
 
     component.props().onMouseDown(mouseEvent);
-    jest.runTimersToTime(Math.round(threshold / 2));
+    jest.advanceTimersByTime(Math.round(threshold / 2));
     component.props().onMouseUp(mouseEvent);
 
     expect(callback).toHaveBeenCalledTimes(0);
@@ -161,7 +160,7 @@ describe('Detect long press and trigger appropriate handlers', () => {
     jest.clearAllMocks();
 
     component.props().onMouseDown(mouseEvent);
-    jest.runTimersToTime(Math.round(threshold / 2));
+    jest.advanceTimersByTime(Math.round(threshold / 2));
     component.props().onMouseLeave(mouseEvent);
 
     expect(callback).toHaveBeenCalledTimes(0);
@@ -211,7 +210,7 @@ describe('Detect long press and trigger appropriate handlers', () => {
     jest.clearAllMocks();
 
     component.props().onTouchStart(touchEvent);
-    jest.runTimersToTime(Math.round(threshold / 2));
+    jest.advanceTimersByTime(Math.round(threshold / 2));
     component.props().onTouchEnd(touchEvent);
 
     expect(callback).toHaveBeenCalledTimes(0);
@@ -305,7 +304,7 @@ describe('Check appropriate behaviour considering supplied hook options', () => 
     expect(onFinish).toHaveBeenCalledWith();
 
     component.props().onMouseDown(mouseEvent);
-    jest.runTimersToTime(Math.round(threshold / 2));
+    jest.advanceTimersByTime(Math.round(threshold / 2));
     component.props().onMouseUp(mouseEvent);
 
     expect(onCancel).toHaveBeenCalledWith();
@@ -318,7 +317,7 @@ describe('Check appropriate behaviour considering supplied hook options', () => 
     const component = createShallowTestComponent({ callback, threshold });
 
     component.props().onMouseDown(mouseEvent);
-    jest.runTimersToTime(threshold * 5);
+    jest.advanceTimersByTime(threshold * 5);
     component.props().onMouseUp(mouseEvent);
 
     expect(callback).toBeCalledTimes(1);
@@ -492,7 +491,7 @@ describe('Check appropriate behaviour considering supplied hook options', () => 
 
 describe('Test general hook behaviour inside a component', () => {
   beforeEach(() => {
-    jest.useFakeTimers();
+    jest.useFakeTimers('legacy');
   });
 
   afterEach(() => {
@@ -542,7 +541,7 @@ describe('Test general hook behaviour inside a component', () => {
 
     expect(onStart).toHaveBeenCalledTimes(1);
 
-    jest.runTimersToTime(thresholdHalf);
+    jest.advanceTimersByTime(thresholdHalf);
 
     component.unmount();
     // Trigger useEffect unmount handler
@@ -551,7 +550,7 @@ describe('Test general hook behaviour inside a component', () => {
     });
 
     expect(callback).toHaveBeenCalledTimes(0);
-    jest.runTimersToTime(thresholdHalf + 1);
+    jest.advanceTimersByTime(thresholdHalf + 1);
     expect(callback).toHaveBeenCalledTimes(0);
   });
 
