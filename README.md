@@ -2,7 +2,7 @@
 
 > React hook for detecting click (or tap) and hold event.
 
-![Travis (.org)](https://img.shields.io/travis/minwork/use-long-press)
+[![Build Status](https://travis-ci.com/minwork/use-long-press.svg?branch=master)](https://travis-ci.com/minwork/use-long-press)
 ![Codecov](https://img.shields.io/codecov/c/gh/minwork/use-long-press)
 ![npm type definitions](https://img.shields.io/npm/types/use-long-press)
 ![npm bundle size](https://img.shields.io/bundlephobia/min/use-long-press)
