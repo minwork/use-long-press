@@ -3,9 +3,9 @@ if: (type = push AND branch = master) OR (type = pull_request AND NOT branch =~ 
 language: node_js
 
 node_js:
+  - "16"
   - "14"
   - "12"
-  - "10"
 
 before_install:
   - npm i -g npm
