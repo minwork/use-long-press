@@ -58,6 +58,68 @@ describe('Check isolated hook calls', () => {
   });
 });
 
+describe('Browser compatibility', () => {
+  const originalWindow = { ...window.window };
+  // let mouseEvent: React.MouseEvent;
+  let touchEvent: React.TouchEvent;
+  let windowSpy: jest.MockInstance<typeof window, []>;
+  let callback: LongPressCallback;
+  let onStart: LongPressCallback;
+  let onFinish: LongPressCallback;
+  let onCancel: LongPressCallback;
+
+  beforeEach(() => {
+    // Use fake timers for detecting long press
+    jest.useFakeTimers();
+    // mouseEvent = mockMouseEvent({ persist: jest.fn() });
+    touchEvent = mockTouchEvent({ persist: jest.fn() });
+    windowSpy = jest.spyOn(window, 'window', 'get');
+    callback = jest.fn();
+    onStart = jest.fn();
+    onFinish = jest.fn();
+    onCancel = jest.fn();
+  });
+
+  afterEach(() => {
+    windowSpy.mockRestore();
+    jest.clearAllMocks();
+    jest.clearAllTimers();
+  });
+  test('Properly detect TouchEvent event if browser doesnt provide it', () => {
+    windowSpy.mockImplementation(
+      () =>
+        ({
+          ...originalWindow,
+          TouchEvent: undefined,
+        } as unknown as typeof window)
+    );
+
+    const component = createShallowTestComponent({
+      callback,
+      onStart,
+      onFinish,
+      onCancel,
+      captureEvent: true,
+      detect: LongPressDetectEvents.TOUCH,
+    });
+
+    component.props().onTouchStart(touchEvent);
+    jest.runOnlyPendingTimers();
+    component.props().onTouchEnd(touchEvent);
+
+    expect(callback).toHaveBeenCalledTimes(1);
+    expect(callback).toHaveBeenCalledWith(touchEvent);
+
+    expect(onStart).toHaveBeenCalledTimes(1);
+    expect(onStart).toHaveBeenCalledWith(touchEvent);
+
+    expect(onFinish).toHaveBeenCalledTimes(1);
+    expect(onFinish).toHaveBeenCalledWith(touchEvent);
+
+    expect(onCancel).toHaveBeenCalledTimes(0);
+  });
+});
+
 describe('Detect long press and trigger appropriate handlers', () => {
   let mouseEvent: React.MouseEvent;
   let touchEvent: React.TouchEvent;
@@ -363,10 +425,10 @@ describe('Check appropriate behaviour considering supplied hook options', () => 
   describe('Cancel on movement', () => {
     test('Should not cancel on movement when appropriate option is set to false', () => {
       const touchEvent = mockTouchEvent({
-        touches: ([{ pageX: 0, pageY: 0 }] as unknown) as React.TouchList,
+        touches: [{ pageX: 0, pageY: 0 }] as unknown as React.TouchList,
       });
       const moveTouchEvent = mockTouchEvent({
-        touches: ([{ pageX: Number.MAX_SAFE_INTEGER, pageY: Number.MAX_SAFE_INTEGER }] as unknown) as React.TouchList,
+        touches: [{ pageX: Number.MAX_SAFE_INTEGER, pageY: Number.MAX_SAFE_INTEGER }] as unknown as React.TouchList,
       });
       const mouseEvent = mockMouseEvent({ pageX: 0, pageY: 0 });
       const moveMouseEvent = mockMouseEvent({
@@ -394,10 +456,10 @@ describe('Check appropriate behaviour considering supplied hook options', () => 
 
     test('Should cancel on movement when appropriate option is set to true', () => {
       const touchEvent = mockTouchEvent({
-        touches: ([{ pageX: 0, pageY: 0 }] as unknown) as React.TouchList,
+        touches: [{ pageX: 0, pageY: 0 }] as unknown as React.TouchList,
       });
       const moveTouchEvent = mockTouchEvent({
-        touches: ([{ pageX: Number.MAX_SAFE_INTEGER, pageY: Number.MAX_SAFE_INTEGER }] as unknown) as React.TouchList,
+        touches: [{ pageX: Number.MAX_SAFE_INTEGER, pageY: Number.MAX_SAFE_INTEGER }] as unknown as React.TouchList,
       });
       const mouseEvent = mockMouseEvent({ pageX: 0, pageY: 0 });
       const moveMouseEvent = mockMouseEvent({
@@ -426,10 +488,10 @@ describe('Check appropriate behaviour considering supplied hook options', () => 
     test('Should not cancel when within explicitly set movement tolerance', () => {
       const tolerance = 10;
       const touchEvent = mockTouchEvent({
-        touches: ([{ pageX: 0, pageY: 0 }] as unknown) as React.TouchList,
+        touches: [{ pageX: 0, pageY: 0 }] as unknown as React.TouchList,
       });
       const moveTouchEvent = mockTouchEvent({
-        touches: ([{ pageX: tolerance, pageY: tolerance }] as unknown) as React.TouchList,
+        touches: [{ pageX: tolerance, pageY: tolerance }] as unknown as React.TouchList,
       });
       const mouseEvent = mockMouseEvent({ pageX: 0, pageY: 0 });
       const moveMouseEvent = mockMouseEvent({
@@ -458,10 +520,10 @@ describe('Check appropriate behaviour considering supplied hook options', () => 
     test('Should cancel when moved outside explicitly set movement tolerance', () => {
       const tolerance = 10;
       const touchEvent = mockTouchEvent({
-        touches: ([{ pageX: 0, pageY: 0 }] as unknown) as React.TouchList,
+        touches: [{ pageX: 0, pageY: 0 }] as unknown as React.TouchList,
       });
       const moveTouchEvent = mockTouchEvent({
-        touches: ([{ pageX: 2 * tolerance, pageY: 2 * tolerance }] as unknown) as React.TouchList,
+        touches: [{ pageX: 2 * tolerance, pageY: 2 * tolerance }] as unknown as React.TouchList,
       });
       const mouseEvent = mockMouseEvent({ pageX: 0, pageY: 0 });
       const moveMouseEvent = mockMouseEvent({
@@ -533,11 +595,7 @@ describe('Test general hook behaviour inside a component', () => {
     const component = createMountedTestComponent({ callback, threshold, onStart });
 
     // Trigger press start
-    component
-      .find('TestComponent')
-      .children()
-      .props()
-      .onMouseDown(mouseEvent);
+    component.find('TestComponent').children().props().onMouseDown(mouseEvent);
 
     expect(onStart).toHaveBeenCalledTimes(1);
 
@@ -563,10 +621,7 @@ describe('Test general hook behaviour inside a component', () => {
 
     const component = createMountedTestComponent({ callback, onStart, onFinish, onCancel });
 
-    let props = component
-      .find('TestComponent')
-      .children()
-      .props();
+    let props = component.find('TestComponent').children().props();
 
     expect(props).toHaveProperty('onMouseDown');
     expect(props).toHaveProperty('onMouseUp');
@@ -581,10 +636,7 @@ describe('Test general hook behaviour inside a component', () => {
     });
     jest.runOnlyPendingTimers();
 
-    props = component
-      .find('TestComponent')
-      .children()
-      .props();
+    props = component.find('TestComponent').children().props();
 
     expect(props).not.toHaveProperty('onMouseDown');
     expect(props).not.toHaveProperty('onMouseUp');
@@ -618,30 +670,30 @@ describe('Test general hook behaviour inside a component', () => {
     const callback = jest.fn();
     const component = createShallowTestComponent({ callback, cancelOnMovement: true });
 
-    component.props().onMouseDown((fakeEvent as unknown) as React.MouseEvent);
+    component.props().onMouseDown(fakeEvent as unknown as React.MouseEvent);
     jest.runOnlyPendingTimers();
-    component.props().onMouseUp((fakeEvent as unknown) as React.MouseEvent);
+    component.props().onMouseUp(fakeEvent as unknown as React.MouseEvent);
 
     expect(callback).toBeCalledTimes(0);
 
-    component.props().onMouseDown((fakeEvent as unknown) as React.MouseEvent);
-    component.props().onMouseMove((fakeEvent as unknown) as React.MouseEvent);
+    component.props().onMouseDown(fakeEvent as unknown as React.MouseEvent);
+    component.props().onMouseMove(fakeEvent as unknown as React.MouseEvent);
     jest.runOnlyPendingTimers();
-    component.props().onMouseUp((fakeEvent as unknown) as React.MouseEvent);
-    component.props().onMouseLeave((fakeEvent as unknown) as React.MouseEvent);
+    component.props().onMouseUp(fakeEvent as unknown as React.MouseEvent);
+    component.props().onMouseLeave(fakeEvent as unknown as React.MouseEvent);
 
     expect(callback).toBeCalledTimes(0);
 
-    component.props().onTouchStart((fakeEvent as unknown) as React.TouchEvent);
+    component.props().onTouchStart(fakeEvent as unknown as React.TouchEvent);
     jest.runOnlyPendingTimers();
-    component.props().onTouchEnd((fakeEvent as unknown) as React.TouchEvent);
+    component.props().onTouchEnd(fakeEvent as unknown as React.TouchEvent);
 
     expect(callback).toBeCalledTimes(0);
 
-    component.props().onTouchStart((fakeEvent as unknown) as React.TouchEvent);
-    component.props().onTouchMove((fakeEvent as unknown) as React.TouchEvent);
+    component.props().onTouchStart(fakeEvent as unknown as React.TouchEvent);
+    component.props().onTouchMove(fakeEvent as unknown as React.TouchEvent);
     jest.runOnlyPendingTimers();
-    component.props().onTouchEnd((fakeEvent as unknown) as React.TouchEvent);
+    component.props().onTouchEnd(fakeEvent as unknown as React.TouchEvent);
 
     expect(callback).toBeCalledTimes(0);
   });
