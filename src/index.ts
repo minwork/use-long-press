@@ -9,7 +9,8 @@ import {
 } from 'react';
 
 function isTouchEvent<Target>(event: LongPressEvent<Target>): event is ReactTouchEvent<Target> {
-  return event.nativeEvent instanceof TouchEvent;
+  const { nativeEvent } = event;
+  return window.TouchEvent ? nativeEvent instanceof TouchEvent : 'touches' in nativeEvent;
 }
 function isMouseEvent<Target>(event: LongPressEvent<Target>): event is ReactMouseEvent<Target> {
   return event.nativeEvent instanceof MouseEvent;
@@ -50,7 +51,6 @@ export enum LongPressDetectEvents {
 
 export type LongPressResult<
   Target,
-  Callback,
   DetectType extends LongPressDetectEvents = LongPressDetectEvents.BOTH
 > = DetectType extends LongPressDetectEvents.BOTH
   ? {
@@ -88,15 +88,15 @@ export interface LongPressOptions<Target = Element> {
   onCancel?: LongPressCallback<Target>;
 }
 
-export function useLongPress<Target = Element>(callback: null, options?: LongPressOptions<Target>): {};
+export function useLongPress<Target = Element>(callback: null, options?: LongPressOptions<Target>): Record<string, never>;
 export function useLongPress<Target = Element, Callback extends LongPressCallback<Target> = LongPressCallback<Target>>(
   callback: Callback,
   options?: LongPressOptions<Target>
-): LongPressResult<Target, Callback>;
+): LongPressResult<Target>;
 export function useLongPress<Target = Element, Callback extends LongPressCallback<Target> = LongPressCallback<Target>>(
   callback: Callback | null,
   options?: LongPressOptions<Target>
-): LongPressResult<Target, Callback> | {};
+): LongPressResult<Target> | Record<string, never>;
 /**
  * Detect click / tap and hold event
  *
@@ -142,7 +142,7 @@ export function useLongPress<
     onFinish,
     onCancel,
   }: LongPressOptions<Target> = {}
-): LongPressResult<Target, Callback, typeof detect> | {} {
+): LongPressResult<Target, typeof detect> | Record<string, never> {
   const isLongPressActive = useRef(false);
   const isPressed = useRef(false);
   const timer = useRef<NodeJS.Timeout>();
