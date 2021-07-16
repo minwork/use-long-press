@@ -2,16 +2,16 @@
 
 > React hook for detecting click (or tap) and hold event.
 
-![Travis (.org)](https://img.shields.io/travis/minwork/use-long-press)
+[![Build Status](https://travis-ci.com/minwork/use-long-press.svg?branch=master)](https://travis-ci.com/minwork/use-long-press)
 ![Codecov](https://img.shields.io/codecov/c/gh/minwork/use-long-press)
 ![npm type definitions](https://img.shields.io/npm/types/use-long-press)
 ![npm bundle size](https://img.shields.io/bundlephobia/min/use-long-press)
-![npm](https://img.shields.io/npm/v/use-long-press)
-![GitHub](https://img.shields.io/github/license/minwork/use-long-press)
+[![npm](https://img.shields.io/npm/v/use-long-press)](https://www.npmjs.com/package/use-long-press)
+[![GitHub](https://img.shields.io/github/license/minwork/use-long-press)](https://github.com/minwork/use-long-press/blob/master/LICENSE)
 
--   Easy to use
--   Highly customizable options
--   Thoroughly tested
+- Easy to use
+- Highly customizable options
+- Thoroughly tested
 
 ## Install
 
@@ -32,11 +32,11 @@ import React from 'react';
 import { useLongPress } from 'use-long-press';
 
 const Example = () => {
-    const bind = useLongPress(() => {
-        console.log('Long pressed!');
-    });
+  const bind = useLongPress(() => {
+    console.log('Long pressed!');
+  });
 
-    return <button {...bind}>Press me</button>;
+  return <button {...bind}>Press me</button>;
 };
 ```
 
@@ -62,14 +62,16 @@ useLongPress(callback [, options]): handlers
 
 Long press hook can be adjusted using options object, which allow you to fit it to your needs.
 
-| Name         |                    Type                    | Default  | Description                                                                                                                                                                           |
-| ------------ | :----------------------------------------: | :------: | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| threshold    |                   number                   |   400    | Time user need to hold click or tap before long press _callback_ is triggered                                                                                                         |
-| captureEvent |                  boolean                   |  false   | If React MouseEvent (or TouchEvent) should be supplied as first argument to callbacks                                                                                                 |
-| detect       | Enum('mouse' &#x7c; 'touch' &#x7c; 'both') |  'both'  | Which event handlers should be returned in `bind` object. In TS this enum is accessible through `LongPressDetectEvents`                                                               |
-| onStart      |                  Function                  | () => {} | Called when element is initially pressed (before starting timer which detects long press).<br><br>Can accept mouse or touch event if _captureEvents_ option is set to `true`.         |
-| onFinish     |                  Function                  | () => {} | Called when press is released (after triggering _callback_).<br><br>Can accept mouse or touch event if _captureEvents_ option is set to `true`.                                       |
-| onCancel     |                  Function                  | () => {} | Called when press is released before _threshold_ time elapses, therefore before long press occurs.<br><br>Can accept mouse or touch event if _captureEvents_ option is set to `true`. |
+| Name             |                    Type                    |  Default  | Description                                                                                                                                                                                                                            |
+| ---------------- | :----------------------------------------: | :-------: | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| threshold        |                   number                   |    400    | Time user need to hold click or tap before long press _callback_ is triggered                                                                                                                                                          |
+| captureEvent     |                  boolean                   |   false   | If React MouseEvent (or TouchEvent) should be supplied as first argument to callbacks                                                                                                                                                  |
+| detect           | Enum('mouse' &#x7c; 'touch' &#x7c; 'both') |  'both'   | Which event handlers should be returned in `bind` object. In TS this enum is accessible through `LongPressDetectEvents`                                                                                                                |
+| cancelOnMovement |           boolean &#x7c; number            |   false   | If long press should be cancelled when detected movement while pressing. Use _boolean_ value to turn it on / off or _number_ value to specify move tolerance in pixels.<br><br>For more information on how this prop work check JSDoc. |
+| onStart          |                  Function                  | undefined | Called when element is initially pressed (before starting timer which detects long press).<br><br>Can accept mouse or touch event if _captureEvents_ option is set to `true`.                                                          |
+| onFinish         |                  Function                  | undefined | Called when press is released (after triggering _callback_).<br><br>Can accept mouse or touch event if _captureEvents_ option is set to `true`.                                                                                        |
+| onCancel         |                  Function                  | undefined | Called when press is released before _threshold_ time elapses, therefore before long press occurs.<br><br>Can accept mouse or touch event if _captureEvents_ option is set to `true`.                                                  |
+| onMove           |                  Function                  | undefined | Handler for `onTouchMove` and `onMouseMove` props, also allowing to make some operations on event before triggering _cancelOnMovement_.<br><br>Can accept mouse or touch event if _captureEvents_ option is set to `true`.             |
 
 ### Example
 
@@ -78,35 +80,32 @@ import React, { useState, useCallback } from 'react';
 import { useLongPress } from 'use-long-press';
 
 export default function AdvancedExample() {
-    const [enabled, setEnabled] = useState(true);
-    const callback = useCallback(event => {
-        alert('Long pressed!');
-    }, []);
-    const bind = useLongPress(enabled ? callback : null, {
-        onStart: event => console.log('Press started'),
-        onFinish: event => console.log('Long press finished'),
-        onCancel: event => console.log('Press cancelled'),
-        threshold: 500,
-        captureEvent: true,
-        detect: 'both',
-    });
+  const [enabled, setEnabled] = useState(true);
+  const callback = useCallback(event => {
+    alert('Long pressed!');
+  }, []);
+  const bind = useLongPress(enabled ? callback : null, {
+    onStart: event => console.log('Press started'),
+    onFinish: event => console.log('Long press finished'),
+    onCancel: event => console.log('Press cancelled'),
+    onMove: event => console.log('Detected mouse or touch movement'),
+    threshold: 500,
+    captureEvent: true,
+    cancelOnMovement: false,
+    detect: 'both',
+  });
 
-    return (
-        <div>
-            <button {...bind}>Press and hold</button>
-            <div>
-                <label htmlFor="enabled">
-                    <input
-                        type="checkbox"
-                        id="enabled"
-                        checked={enabled}
-                        onChange={() => setEnabled(current => !current)}
-                    />
-                    Hook enabled
-                </label>
-            </div>
-        </div>
-    );
+  return (
+    <div>
+      <button {...bind}>Press and hold</button>
+      <div>
+        <label htmlFor="enabled">
+          <input type="checkbox" id="enabled" checked={enabled} onChange={() => setEnabled(current => !current)} />
+          Hook enabled
+        </label>
+      </div>
+    </div>
+  );
 }
 ```
 

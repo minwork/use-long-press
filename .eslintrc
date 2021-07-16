@@ -5,9 +5,7 @@
         "plugin:@typescript-eslint/eslint-recommended",
         "plugin:@typescript-eslint/recommended",
         "plugin:@typescript-eslint/recommended-requiring-type-checking",
-        "prettier/@typescript-eslint",
-        "prettier/react",
-        "plugin:prettier/recommended"
+        "prettier"
     ],
     "plugins": ["@typescript-eslint"],
     "parser": "@typescript-eslint/parser",
@@ -31,6 +29,9 @@
                 "skipUndeclared": true
             }
         ],
-        "react/jsx-props-no-spreading": "off"
+        "react/jsx-props-no-spreading": "off",
+      "@typescript-eslint/no-unsafe-call":  "off",
+      "@typescript-eslint/no-unsafe-assignment": "off",
+      "@typescript-eslint/no-unsafe-member-access": "off"
     }
 }
