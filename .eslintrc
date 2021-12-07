@@ -1,37 +1,16 @@
 {
-    "extends": [
-        "airbnb-typescript",
-        "airbnb/hooks",
-        "plugin:@typescript-eslint/eslint-recommended",
-        "plugin:@typescript-eslint/recommended",
-        "plugin:@typescript-eslint/recommended-requiring-type-checking",
-        "prettier"
-    ],
-    "plugins": ["@typescript-eslint"],
-    "parser": "@typescript-eslint/parser",
-    "parserOptions": {
-        "project": "./tsconfig.lint.json"
-    },
-    "rules": {
-        "import/no-unresolved": "off",
-        "react/jsx-filename-extension": [
-            "error",
-            {
-                "extensions": [".jsx", ".tsx"]
-            }
-        ],
-        "no-unused-expressions": "off",
-        "@typescript-eslint/no-unused-expressions": "off",
-        "import/prefer-default-export": "off",
-        "react/prop-types": [
-            "error",
-            {
-                "skipUndeclared": true
-            }
-        ],
-        "react/jsx-props-no-spreading": "off",
-      "@typescript-eslint/no-unsafe-call":  "off",
-      "@typescript-eslint/no-unsafe-assignment": "off",
-      "@typescript-eslint/no-unsafe-member-access": "off"
-    }
+  "extends": ["react-app", "react-app/jest", "prettier"],
+  "plugins": ["react"],
+  "parserOptions": {
+    "project": "./tsconfig.lint.json"
+  },
+  "rules": {
+    "react/jsx-curly-brace-presence": [
+      "warn",
+      {
+        "props": "never",
+        "children": "ignore"
+      }
+    ]
+  }
 }

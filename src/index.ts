@@ -1,102 +1,33 @@
+import { MouseEventHandler, TouchEventHandler, useCallback, useEffect, useMemo, useRef } from 'react';
 import {
-  MouseEvent as ReactMouseEvent,
-  MouseEventHandler,
-  TouchEvent as ReactTouchEvent,
-  TouchEventHandler,
-  useCallback,
-  useEffect,
-  useRef,
-} from 'react';
+  Coordinates,
+  CallableContextResult,
+  EmptyObject,
+  LongPressCallback,
+  LongPressDetectEvents,
+  LongPressEvent,
+  LongPressOptions,
+  LongPressResult,
+} from './types';
+import { getCurrentPosition, isMouseEvent, isTouchEvent } from './utils';
 
-function isTouchEvent<Target>(event: LongPressEvent<Target>): event is ReactTouchEvent<Target> {
-  const { nativeEvent } = event;
-  return window.TouchEvent ? nativeEvent instanceof TouchEvent : 'touches' in nativeEvent;
-}
-function isMouseEvent<Target>(event: LongPressEvent<Target>): event is ReactMouseEvent<Target> {
-  return event.nativeEvent instanceof MouseEvent;
-}
-
-type Coordinates = {
-  x: number;
-  y: number;
-} | null;
-
-function getCurrentPosition<Target>(event: LongPressEvent<Target>): Coordinates {
-  if (isTouchEvent(event)) {
-    return {
-      x: event.touches[0].pageX,
-      y: event.touches[0].pageY,
-    };
-  }
-
-  /* istanbul ignore else */
-  if (isMouseEvent(event)) {
-    return {
-      x: event.pageX,
-      y: event.pageY,
-    };
-  }
-
-  /* istanbul ignore next */
-  return null;
-}
-
-export type LongPressEvent<Target = Element> = ReactMouseEvent<Target> | ReactTouchEvent<Target>;
-export type LongPressCallback<Target = Element> = (event?: LongPressEvent<Target>) => void;
-export enum LongPressDetectEvents {
-  BOTH = 'both',
-  MOUSE = 'mouse',
-  TOUCH = 'touch',
-}
-
-export type LongPressResult<
-  Target,
-  DetectType extends LongPressDetectEvents = LongPressDetectEvents.BOTH
-> = DetectType extends LongPressDetectEvents.BOTH
-  ? {
-      onMouseDown: MouseEventHandler<Target>;
-      onMouseUp: MouseEventHandler<Target>;
-      onMouseMove: MouseEventHandler<Target>;
-      onMouseLeave: MouseEventHandler<Target>;
-      onTouchStart: TouchEventHandler<Target>;
-      onTouchMove: TouchEventHandler<Target>;
-      onTouchEnd: TouchEventHandler<Target>;
-    }
-  : DetectType extends LongPressDetectEvents.MOUSE
-  ? {
-      onMouseDown: MouseEventHandler<Target>;
-      onMouseUp: MouseEventHandler<Target>;
-      onMouseMove: MouseEventHandler<Target>;
-      onMouseLeave: MouseEventHandler<Target>;
-    }
-  : DetectType extends LongPressDetectEvents.TOUCH
-  ? {
-      onTouchStart: TouchEventHandler<Target>;
-      onTouchMove: TouchEventHandler<Target>;
-      onTouchEnd: TouchEventHandler<Target>;
-    }
-  : never;
-
-export interface LongPressOptions<Target = Element> {
-  threshold?: number;
-  captureEvent?: boolean;
-  detect?: LongPressDetectEvents;
-  cancelOnMovement?: boolean | number;
-  onStart?: LongPressCallback<Target>;
-  onMove?: LongPressCallback<Target>;
-  onFinish?: LongPressCallback<Target>;
-  onCancel?: LongPressCallback<Target>;
-}
-
-export function useLongPress<Target = Element>(callback: null, options?: LongPressOptions<Target>): Record<string, never>;
-export function useLongPress<Target = Element, Callback extends LongPressCallback<Target> = LongPressCallback<Target>>(
-  callback: Callback,
+export function useLongPress<Target = Element, Context = unknown>(
+  callback: null,
   options?: LongPressOptions<Target>
-): LongPressResult<Target>;
-export function useLongPress<Target = Element, Callback extends LongPressCallback<Target> = LongPressCallback<Target>>(
+): CallableContextResult<EmptyObject, Context>;
+export function useLongPress<
+  Target = Element,
+  Callback extends LongPressCallback<Target> = LongPressCallback<Target>,
+  Context = unknown
+>(callback: Callback, options?: LongPressOptions<Target>): CallableContextResult<LongPressResult<Target>, Context>;
+export function useLongPress<
+  Target = Element,
+  Callback extends LongPressCallback<Target> = LongPressCallback<Target>,
+  Context = unknown
+>(
   callback: Callback | null,
   options?: LongPressOptions<Target>
-): LongPressResult<Target> | Record<string, never>;
+): CallableContextResult<LongPressResult<Target> | EmptyObject, Context>;
 /**
  * Detect click / tap and hold event
  *
@@ -129,7 +60,8 @@ export function useLongPress<Target = Element, Callback extends LongPressCallbac
  */
 export function useLongPress<
   Target extends Element = Element,
-  Callback extends LongPressCallback<Target> = LongPressCallback<Target>
+  Callback extends LongPressCallback<Target> = LongPressCallback<Target>,
+  Context extends unknown = undefined
 >(
   callback: Callback | null,
   {
@@ -141,8 +73,8 @@ export function useLongPress<
     onMove,
     onFinish,
     onCancel,
-  }: LongPressOptions<Target> = {}
-): LongPressResult<Target, typeof detect> | Record<string, never> {
+  }: LongPressOptions<Target, Context> = {}
+): CallableContextResult<LongPressResult<Target, typeof detect> | Record<string, never>, Context> {
   const isLongPressActive = useRef(false);
   const isPressed = useRef(false);
   const timer = useRef<NodeJS.Timeout>();
@@ -150,7 +82,7 @@ export function useLongPress<
   const startPosition = useRef<Coordinates>(null);
 
   const start = useCallback(
-    (event: LongPressEvent<Target>) => {
+    (context?: Context) => (event: LongPressEvent<Target>) => {
       // Prevent multiple start triggers
       if (isPressed.current) {
         return;
@@ -168,11 +100,11 @@ export function useLongPress<
       }
 
       // When touched trigger onStart and start timer
-      captureEvent ? onStart?.(event) : onStart?.();
+      onStart?.(event, context);
       isPressed.current = true;
       timer.current = setTimeout(() => {
         if (savedCallback.current) {
-          captureEvent ? savedCallback.current(event) : savedCallback.current();
+          savedCallback.current(event, context);
           isLongPressActive.current = true;
         }
       }, threshold);
@@ -181,7 +113,7 @@ export function useLongPress<
   );
 
   const cancel = useCallback(
-    (event: LongPressEvent<Target>) => {
+    (context?: Context) => (event: LongPressEvent<Target>) => {
       // Ignore events other than mouse and touch
       if (!isMouseEvent(event) && !isTouchEvent(event)) {
         return;
@@ -195,10 +127,10 @@ export function useLongPress<
 
       // Trigger onFinish callback only if timer was active
       if (isLongPressActive.current) {
-        captureEvent ? onFinish?.(event) : onFinish?.();
+        onFinish?.(event, context);
       } else if (isPressed.current) {
         // Otherwise if not active trigger onCancel
-        captureEvent ? onCancel?.(event) : onCancel?.();
+        onCancel?.(event, context);
       }
       isLongPressActive.current = false;
       isPressed.current = false;
@@ -208,8 +140,8 @@ export function useLongPress<
   );
 
   const handleMove = useCallback(
-    (event: LongPressEvent<Target>) => {
-      captureEvent ? onMove?.(event) : onMove?.();
+    (context?: Context) => (event: LongPressEvent<Target>) => {
+      onMove?.(event, context);
       if (cancelOnMovement && startPosition.current) {
         const currentPosition = getCurrentPosition(event);
         /* istanbul ignore else */
@@ -222,12 +154,12 @@ export function useLongPress<
 
           // If moved outside move tolerance box then cancel long press
           if (movedDistance.x > moveThreshold || movedDistance.y > moveThreshold) {
-            cancel(event);
+            cancel(context)(event);
           }
         }
       }
     },
-    [cancel, cancelOnMovement, captureEvent, onMove]
+    [cancel, cancelOnMovement, onMove]
   );
 
   useEffect(
@@ -242,30 +174,36 @@ export function useLongPress<
     savedCallback.current = callback;
   }, [callback]);
 
-  const mouseHandlers = {
-    onMouseDown: start as MouseEventHandler<Target>,
-    onMouseMove: handleMove as MouseEventHandler<Target>,
-    onMouseUp: cancel as MouseEventHandler<Target>,
-    onMouseLeave: cancel as MouseEventHandler<Target>,
-  };
+  return useMemo(() => {
+    function result(context?: Context) {
+      const mouseHandlers = {
+        onMouseDown: start(context) as MouseEventHandler<Target>,
+        onMouseMove: handleMove(context) as MouseEventHandler<Target>,
+        onMouseUp: cancel(context) as MouseEventHandler<Target>,
+        onMouseLeave: cancel(context) as MouseEventHandler<Target>,
+      };
 
-  const touchHandlers = {
-    onTouchStart: start as TouchEventHandler<Target>,
-    onTouchMove: handleMove as TouchEventHandler<Target>,
-    onTouchEnd: cancel as TouchEventHandler<Target>,
-  };
+      const touchHandlers = {
+        onTouchStart: start(context) as TouchEventHandler<Target>,
+        onTouchMove: handleMove(context) as TouchEventHandler<Target>,
+        onTouchEnd: cancel(context) as TouchEventHandler<Target>,
+      };
 
-  if (callback === null) {
-    return {};
-  }
+      if (callback === null) {
+        return {};
+      }
 
-  if (detect === LongPressDetectEvents.MOUSE) {
-    return mouseHandlers;
-  }
+      if (detect === LongPressDetectEvents.MOUSE) {
+        return mouseHandlers;
+      }
 
-  if (detect === LongPressDetectEvents.TOUCH) {
-    return touchHandlers;
-  }
+      if (detect === LongPressDetectEvents.TOUCH) {
+        return touchHandlers;
+      }
 
-  return { ...mouseHandlers, ...touchHandlers };
+      return { ...mouseHandlers, ...touchHandlers };
+    }
+
+    return result;
+  }, [callback, cancel, detect, handleMove, start]);
 }
