@@ -1,11 +1,13 @@
 import { MouseEventHandler, TouchEventHandler, useCallback, useEffect, useMemo, useRef } from 'react';
 import {
-  Coordinates,
   CallableContextResult,
+  Coordinates,
   EmptyObject,
   LongPressCallback,
+  LongPressCallbackMeta,
   LongPressDetectEvents,
   LongPressEvent,
+  LongPressEventReason,
   LongPressOptions,
   LongPressResult,
 } from './types';
@@ -99,12 +101,14 @@ export function useLongPress<
         event.persist();
       }
 
+      const meta: LongPressCallbackMeta<Context> = context === undefined ? {} : { context };
+
       // When touched trigger onStart and start timer
-      onStart?.(event, context);
+      onStart?.(event, meta);
       isPressed.current = true;
       timer.current = setTimeout(() => {
         if (savedCallback.current) {
-          savedCallback.current(event, context);
+          savedCallback.current(event, meta);
           isLongPressActive.current = true;
         }
       }, threshold);
@@ -113,7 +117,7 @@ export function useLongPress<
   );
 
   const cancel = useCallback(
-    (context?: Context) => (event: LongPressEvent<Target>) => {
+    (context?: Context, reason?: LongPressEventReason) => (event: LongPressEvent<Target>) => {
       // Ignore events other than mouse and touch
       if (!isMouseEvent(event) && !isTouchEvent(event)) {
         return;
@@ -125,12 +129,14 @@ export function useLongPress<
         event.persist();
       }
 
+      const meta: LongPressCallbackMeta<Context> = context === undefined ? {} : { context };
+
       // Trigger onFinish callback only if timer was active
       if (isLongPressActive.current) {
-        onFinish?.(event, context);
+        onFinish?.(event, meta);
       } else if (isPressed.current) {
-        // Otherwise if not active trigger onCancel
-        onCancel?.(event, context);
+        // Otherwise, if not active trigger onCancel
+        onCancel?.(event, { ...meta, reason: reason ?? LongPressEventReason.CANCELED_BY_TIMEOUT });
       }
       isLongPressActive.current = false;
       isPressed.current = false;
@@ -141,7 +147,7 @@ export function useLongPress<
 
   const handleMove = useCallback(
     (context?: Context) => (event: LongPressEvent<Target>) => {
-      onMove?.(event, context);
+      onMove?.(event, { context });
       if (cancelOnMovement && startPosition.current) {
         const currentPosition = getCurrentPosition(event);
         /* istanbul ignore else */
@@ -154,7 +160,7 @@ export function useLongPress<
 
           // If moved outside move tolerance box then cancel long press
           if (movedDistance.x > moveThreshold || movedDistance.y > moveThreshold) {
-            cancel(context)(event);
+            cancel(context, LongPressEventReason.CANCELED_BY_MOVEMENT)(event);
           }
         }
       }

@@ -15,7 +15,7 @@ export const TestComponent: React.FC<TestComponentProps> = ({ callback, context,
   const key = useRef(i++);
 
   return (
-    <button key={key.current} type="button" {...bind(context)}>
+    <button key={key.current} type="button" {...(context === undefined ? bind() : bind(context))}>
       Click and hold
     </button>
   );

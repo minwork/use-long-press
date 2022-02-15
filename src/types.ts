@@ -10,10 +10,17 @@ export type Coordinates = {
   y: number;
 } | null;
 
+export enum LongPressEventReason {
+  // Triggered when mouse / touch was moved outside initial press area when `cancelOnMovement` is active
+  CANCELED_BY_MOVEMENT = 'canceled-by-movement',
+  // Triggered when released click / tap before long press detection threshold
+  CANCELED_BY_TIMEOUT = 'canceled-by-timeout',
+}
 export type LongPressEvent<Target = Element> = ReactMouseEvent<Target> | ReactTouchEvent<Target>;
+export type LongPressCallbackMeta<Context = unknown> = { context?: Context; reason?: LongPressEventReason };
 export type LongPressCallback<Target = Element, Context = unknown> = (
   event: LongPressEvent<Target>,
-  context?: Context
+  meta: LongPressCallbackMeta<Context>
 ) => void;
 
 export enum LongPressDetectEvents {
