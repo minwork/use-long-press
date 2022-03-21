@@ -549,6 +549,53 @@ describe('Check appropriate behaviour considering supplied hook options', () => 
       expect(callback).toBeCalledTimes(0);
     });
   });
+
+  test('No callbacks should be triggered when event is filtered out by filterEvents option', () => {
+    let touchEvent = mockTouchEvent({ altKey: true });
+    let mouseEvent = mockMouseEvent({ button: 2 });
+    const callback = jest.fn();
+    const onStart = jest.fn();
+    const onFinish = jest.fn();
+    const onCancel = jest.fn();
+    const component = createShallowTestComponent({
+      callback,
+      detect: LongPressDetectEvents.BOTH,
+      onStart,
+      onFinish,
+      onCancel,
+      filterEvents: (event) => {
+        if ('button' in event && event.button === 2) {
+          return false;
+        }
+        return !event.altKey;
+      },
+    });
+
+    component.props().onMouseDown(mouseEvent);
+    component.props().onTouchStart(touchEvent);
+    expect(onStart).toBeCalledTimes(0);
+    jest.runOnlyPendingTimers();
+    component.props().onMouseLeave(mouseEvent);
+    component.props().onMouseUp(mouseEvent);
+    component.props().onTouchEnd(touchEvent);
+    expect(callback).toBeCalledTimes(0);
+    expect(onFinish).toBeCalledTimes(0);
+    expect(onCancel).toBeCalledTimes(0);
+
+    mouseEvent = mockMouseEvent();
+    touchEvent = mockTouchEvent();
+
+    component.props().onMouseDown(mouseEvent);
+    component.props().onTouchStart(touchEvent);
+    expect(onStart).toBeCalledTimes(1);
+    jest.runOnlyPendingTimers();
+    component.props().onMouseLeave(mouseEvent);
+    component.props().onMouseUp(mouseEvent);
+    component.props().onTouchEnd(touchEvent);
+    expect(callback).toBeCalledTimes(1);
+    expect(onFinish).toBeCalledTimes(1);
+    expect(onCancel).toBeCalledTimes(0);
+  });
 });
 
 describe('Test general hook behaviour inside a component', () => {
