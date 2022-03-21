@@ -81,6 +81,7 @@ export interface LongPressOptions<Target = Element> {
   threshold?: number;
   captureEvent?: boolean;
   detect?: LongPressDetectEvents;
+  filterEvents?: (event: LongPressEvent<Target>) => boolean;
   cancelOnMovement?: boolean | number;
   onStart?: LongPressCallback<Target>;
   onMove?: LongPressCallback<Target>;
@@ -88,7 +89,10 @@ export interface LongPressOptions<Target = Element> {
   onCancel?: LongPressCallback<Target>;
 }
 
-export function useLongPress<Target = Element>(callback: null, options?: LongPressOptions<Target>): Record<string, never>;
+export function useLongPress<Target = Element>(
+  callback: null,
+  options?: LongPressOptions<Target>
+): Record<string, never>;
 export function useLongPress<Target = Element, Callback extends LongPressCallback<Target> = LongPressCallback<Target>>(
   callback: Callback,
   options?: LongPressOptions<Target>
@@ -137,6 +141,7 @@ export function useLongPress<
     captureEvent = false,
     detect = LongPressDetectEvents.BOTH,
     cancelOnMovement = false,
+    filterEvents,
     onStart,
     onMove,
     onFinish,
@@ -161,6 +166,11 @@ export function useLongPress<
         return;
       }
 
+      // If we don't want all events to trigger long press and provided event is filtered out
+      if (filterEvents !== undefined && !filterEvents(event)) {
+        return;
+      }
+
       startPosition.current = getCurrentPosition(event);
 
       if (captureEvent) {
@@ -177,7 +187,7 @@ export function useLongPress<
         }
       }, threshold);
     },
-    [captureEvent, onStart, threshold]
+    [captureEvent, filterEvents, onStart, threshold]
   );
 
   const cancel = useCallback(
