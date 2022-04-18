@@ -7,7 +7,7 @@
 ![npm type definitions](https://img.shields.io/npm/types/use-long-press)
 ![npm bundle size](https://img.shields.io/bundlephobia/min/use-long-press)
 [![npm](https://img.shields.io/npm/v/use-long-press)](https://www.npmjs.com/package/use-long-press)
-[![GitHub](https://img.shields.io/github/license/minwork/use-long-press)](https://github.com/minwork/use-long-press/blob/master/LICENSE)
+[![Github Stars](https://img.shields.io/github/stars/minwork/use-long-press?style=social)](https://github.com/minwork/use-long-press)
 
 - Easy to use
 - Highly customizable options

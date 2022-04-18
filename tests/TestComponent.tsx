@@ -1,16 +1,21 @@
-import React, { Component, HTMLAttributes } from 'react';
+import React, { Component, HTMLAttributes, useRef } from 'react';
 import { mount, ReactWrapper, shallow, ShallowWrapper } from 'enzyme';
-import { LongPressCallback, LongPressOptions, useLongPress } from '../src';
+import { useLongPress } from '../src';
+import { LongPressCallback, LongPressOptions } from '../src/types';
 
 export interface TestComponentProps extends LongPressOptions {
   callback: LongPressCallback | null;
+  context?: unknown;
 }
 
-export const TestComponent: React.FC<TestComponentProps> = ({ callback, children, ...options }) => {
+let i = 1;
+
+export const TestComponent: React.FC<TestComponentProps> = ({ callback, context, children, ...options }) => {
   const bind = useLongPress<HTMLButtonElement>(callback, options);
+  const key = useRef(i++);
 
   return (
-    <button type="button" {...bind}>
+    <button key={key.current} type="button" {...(context === undefined ? bind() : bind(context))}>
       Click and hold
     </button>
   );

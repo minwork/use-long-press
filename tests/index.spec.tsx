@@ -1,18 +1,26 @@
 import { renderHook } from '@testing-library/react-hooks';
 import { act } from 'react-dom/test-utils';
 import { mockMouseEvent, mockTouchEvent } from './utils';
-import { LongPressCallback, LongPressDetectEvents, useLongPress } from '../src';
+import { useLongPress } from '../src';
 import { createMountedTestComponent, createShallowTestComponent } from './TestComponent';
+import { LongPressCallback, LongPressDetectEvents, LongPressEventReason } from '../src/types';
+import React from 'react';
+import { isMouseEvent, isTouchEvent } from '../src/utils';
+
+afterEach(() => {
+  jest.restoreAllMocks();
+  jest.resetAllMocks();
+});
 
 describe('Check isolated hook calls', () => {
-  test('Return empty object when callback is null', () => {
+  it('should return empty object when callback is null', () => {
     const { result } = renderHook(() => useLongPress(null));
-    expect(result.current).toEqual({});
+    expect(result.current()).toEqual({});
   });
 
-  test('Return object with all handlers when callback is not null', () => {
+  it('should return object with all handlers when callback is not null', () => {
     const { result } = renderHook(() => useLongPress(() => {}));
-    expect(result.current).toMatchObject({
+    expect(result.current()).toMatchObject({
       onMouseDown: expect.any(Function),
       onMouseUp: expect.any(Function),
       onMouseLeave: expect.any(Function),
@@ -21,13 +29,13 @@ describe('Check isolated hook calls', () => {
     });
   });
 
-  test('Return appropriate handlers when called with detect param', () => {
+  it('should return appropriate handlers when called with detect param', () => {
     const { result: resultBoth } = renderHook(() =>
       useLongPress(() => {}, {
         detect: LongPressDetectEvents.BOTH,
       })
     );
-    expect(resultBoth.current).toMatchObject({
+    expect(resultBoth.current()).toMatchObject({
       onMouseDown: expect.any(Function),
       onMouseUp: expect.any(Function),
       onMouseLeave: expect.any(Function),
@@ -40,7 +48,7 @@ describe('Check isolated hook calls', () => {
         detect: LongPressDetectEvents.MOUSE,
       })
     );
-    expect(resultMouse.current).toMatchObject({
+    expect(resultMouse.current()).toMatchObject({
       onMouseDown: expect.any(Function),
       onMouseUp: expect.any(Function),
       onMouseLeave: expect.any(Function),
@@ -51,10 +59,15 @@ describe('Check isolated hook calls', () => {
         detect: LongPressDetectEvents.TOUCH,
       })
     );
-    expect(resultTouch.current).toMatchObject({
+    expect(resultTouch.current()).toMatchObject({
       onTouchStart: expect.any(Function),
       onTouchEnd: expect.any(Function),
     });
+  });
+
+  it('should return callable object', () => {
+    const { result } = renderHook(() => useLongPress(null));
+    expect(result.current()).toEqual({});
   });
 });
 
@@ -85,7 +98,7 @@ describe('Browser compatibility', () => {
     jest.clearAllMocks();
     jest.clearAllTimers();
   });
-  test('Properly detect TouchEvent event if browser doesnt provide it', () => {
+  it('Properly detect TouchEvent event if browser doesnt provide it', () => {
     windowSpy.mockImplementation(
       () =>
         ({
@@ -108,13 +121,13 @@ describe('Browser compatibility', () => {
     component.props().onTouchEnd(touchEvent);
 
     expect(callback).toHaveBeenCalledTimes(1);
-    expect(callback).toHaveBeenCalledWith(touchEvent);
+    expect(callback).toHaveBeenCalledWith(touchEvent, {});
 
     expect(onStart).toHaveBeenCalledTimes(1);
-    expect(onStart).toHaveBeenCalledWith(touchEvent);
+    expect(onStart).toHaveBeenCalledWith(touchEvent, {});
 
     expect(onFinish).toHaveBeenCalledTimes(1);
-    expect(onFinish).toHaveBeenCalledWith(touchEvent);
+    expect(onFinish).toHaveBeenCalledWith(touchEvent, {});
 
     expect(onCancel).toHaveBeenCalledTimes(0);
   });
@@ -147,7 +160,7 @@ describe('Detect long press and trigger appropriate handlers', () => {
     jest.clearAllTimers();
   });
 
-  test('Detect long press using mouse events', () => {
+  it('Detect long press using mouse events', () => {
     const component = createShallowTestComponent({
       callback,
       onStart,
@@ -161,19 +174,18 @@ describe('Detect long press and trigger appropriate handlers', () => {
     // --------------------------------------------------------------------------------------------------------
     // Mouse down + mouse up (trigger long press)
     // --------------------------------------------------------------------------------------------------------
-
     component.props().onMouseDown(mouseEvent);
     jest.runOnlyPendingTimers();
     component.props().onMouseUp(mouseEvent);
 
     expect(callback).toHaveBeenCalledTimes(1);
-    expect(callback).toHaveBeenCalledWith(mouseEvent);
+    expect(callback).toHaveBeenCalledWith(mouseEvent, {});
 
     expect(onStart).toHaveBeenCalledTimes(1);
-    expect(onStart).toHaveBeenCalledWith(mouseEvent);
+    expect(onStart).toHaveBeenCalledWith(mouseEvent, {});
 
     expect(onFinish).toHaveBeenCalledTimes(1);
-    expect(onFinish).toHaveBeenCalledWith(mouseEvent);
+    expect(onFinish).toHaveBeenCalledWith(mouseEvent, {});
 
     expect(onCancel).toHaveBeenCalledTimes(0);
 
@@ -187,13 +199,13 @@ describe('Detect long press and trigger appropriate handlers', () => {
     component.props().onMouseLeave(mouseEvent);
 
     expect(callback).toHaveBeenCalledTimes(1);
-    expect(callback).toHaveBeenCalledWith(mouseEvent);
+    expect(callback).toHaveBeenCalledWith(mouseEvent, {});
 
     expect(onStart).toHaveBeenCalledTimes(1);
-    expect(onStart).toHaveBeenCalledWith(mouseEvent);
+    expect(onStart).toHaveBeenCalledWith(mouseEvent, {});
 
     expect(onFinish).toHaveBeenCalledTimes(1);
-    expect(onFinish).toHaveBeenCalledWith(mouseEvent);
+    expect(onFinish).toHaveBeenCalledWith(mouseEvent, {});
 
     expect(onCancel).toHaveBeenCalledTimes(0);
 
@@ -209,10 +221,10 @@ describe('Detect long press and trigger appropriate handlers', () => {
     expect(callback).toHaveBeenCalledTimes(0);
 
     expect(onStart).toHaveBeenCalledTimes(1);
-    expect(onStart).toHaveBeenCalledWith(mouseEvent);
+    expect(onStart).toHaveBeenCalledWith(mouseEvent, {});
 
     expect(onCancel).toHaveBeenCalledTimes(1);
-    expect(onCancel).toHaveBeenCalledWith(mouseEvent);
+    expect(onCancel).toHaveBeenCalledWith(mouseEvent, { reason: LongPressEventReason.CANCELED_BY_TIMEOUT });
 
     expect(onFinish).toHaveBeenCalledTimes(0);
 
@@ -228,15 +240,15 @@ describe('Detect long press and trigger appropriate handlers', () => {
     expect(callback).toHaveBeenCalledTimes(0);
 
     expect(onStart).toHaveBeenCalledTimes(1);
-    expect(onStart).toHaveBeenCalledWith(mouseEvent);
+    expect(onStart).toHaveBeenCalledWith(mouseEvent, {});
 
     expect(onCancel).toHaveBeenCalledTimes(1);
-    expect(onCancel).toHaveBeenCalledWith(mouseEvent);
+    expect(onCancel).toHaveBeenCalledWith(mouseEvent, { reason: LongPressEventReason.CANCELED_BY_TIMEOUT });
 
     expect(onFinish).toHaveBeenCalledTimes(0);
   });
 
-  test('Detect long press using touch events', () => {
+  it('Detect long press using touch events', () => {
     const component = createShallowTestComponent({
       callback,
       onStart,
@@ -256,13 +268,13 @@ describe('Detect long press and trigger appropriate handlers', () => {
     component.props().onTouchEnd(touchEvent);
 
     expect(callback).toHaveBeenCalledTimes(1);
-    expect(callback).toHaveBeenCalledWith(touchEvent);
+    expect(callback).toHaveBeenCalledWith(touchEvent, {});
 
     expect(onStart).toHaveBeenCalledTimes(1);
-    expect(onStart).toHaveBeenCalledWith(touchEvent);
+    expect(onStart).toHaveBeenCalledWith(touchEvent, {});
 
     expect(onFinish).toHaveBeenCalledTimes(1);
-    expect(onFinish).toHaveBeenCalledWith(touchEvent);
+    expect(onFinish).toHaveBeenCalledWith(touchEvent, {});
 
     expect(onCancel).toHaveBeenCalledTimes(0);
 
@@ -278,15 +290,15 @@ describe('Detect long press and trigger appropriate handlers', () => {
     expect(callback).toHaveBeenCalledTimes(0);
 
     expect(onStart).toHaveBeenCalledTimes(1);
-    expect(onStart).toHaveBeenCalledWith(touchEvent);
+    expect(onStart).toHaveBeenCalledWith(touchEvent, {});
 
     expect(onCancel).toHaveBeenCalledTimes(1);
-    expect(onCancel).toHaveBeenCalledWith(touchEvent);
+    expect(onCancel).toHaveBeenCalledWith(touchEvent, { reason: LongPressEventReason.CANCELED_BY_TIMEOUT });
 
     expect(onFinish).toHaveBeenCalledTimes(0);
   });
 
-  test('Detect and capture move event', () => {
+  it('Detect and capture move event', () => {
     const onMove = jest.fn();
 
     let touchComponent = createShallowTestComponent({
@@ -297,7 +309,7 @@ describe('Detect long press and trigger appropriate handlers', () => {
     });
 
     touchComponent.props().onTouchMove(touchEvent);
-    expect(onMove).toHaveBeenCalledWith(touchEvent);
+    expect(onMove).toHaveBeenCalledWith(touchEvent, {});
 
     touchComponent = createShallowTestComponent({
       callback: jest.fn(),
@@ -307,7 +319,7 @@ describe('Detect long press and trigger appropriate handlers', () => {
     });
 
     touchComponent.props().onTouchMove(touchEvent);
-    expect(onMove).toHaveBeenCalledWith();
+    expect(onMove).toHaveBeenCalledWith(touchEvent, {});
 
     let mouseComponent = createShallowTestComponent({
       callback: jest.fn(),
@@ -317,7 +329,7 @@ describe('Detect long press and trigger appropriate handlers', () => {
     });
 
     mouseComponent.props().onMouseMove(mouseEvent);
-    expect(onMove).toHaveBeenCalledWith(mouseEvent);
+    expect(onMove).toHaveBeenCalledWith(mouseEvent, {});
 
     mouseComponent = createShallowTestComponent({
       callback: jest.fn(),
@@ -327,7 +339,7 @@ describe('Detect long press and trigger appropriate handlers', () => {
     });
 
     mouseComponent.props().onMouseMove(mouseEvent);
-    expect(onMove).toHaveBeenCalledWith();
+    expect(onMove).toHaveBeenCalledWith(mouseEvent, {});
   });
 });
 
@@ -341,13 +353,14 @@ describe('Check appropriate behaviour considering supplied hook options', () => 
     jest.clearAllMocks();
   });
 
-  test('No events are passed to callbacks when captureEvent flag is false', () => {
+  it('Non-persistent events are passed to callbacks when captureEvent flag is false', () => {
     const threshold = 400;
     const callback = jest.fn();
     const onStart = jest.fn();
     const onFinish = jest.fn();
     const onCancel = jest.fn();
-    const mouseEvent = mockMouseEvent();
+    const persistMock = jest.fn();
+    const mouseEvent = mockMouseEvent({ persist: persistMock });
     const component = createShallowTestComponent({
       callback,
       onStart,
@@ -361,18 +374,16 @@ describe('Check appropriate behaviour considering supplied hook options', () => 
     jest.runOnlyPendingTimers();
     component.props().onMouseUp(mouseEvent);
 
-    expect(callback).toHaveBeenCalledWith();
-    expect(onStart).toHaveBeenCalledWith();
-    expect(onFinish).toHaveBeenCalledWith();
+    expect(persistMock).toHaveBeenCalledTimes(0);
 
     component.props().onMouseDown(mouseEvent);
     jest.advanceTimersByTime(Math.round(threshold / 2));
     component.props().onMouseUp(mouseEvent);
 
-    expect(onCancel).toHaveBeenCalledWith();
+    expect(persistMock).toHaveBeenCalledTimes(0);
   });
 
-  test('Long press is properly detected when end event is long after threshold value', () => {
+  it('Long press is properly detected when end event is long after threshold value', () => {
     const mouseEvent = mockMouseEvent();
     const callback = jest.fn();
     const threshold = 1000;
@@ -385,7 +396,7 @@ describe('Check appropriate behaviour considering supplied hook options', () => 
     expect(callback).toBeCalledTimes(1);
   });
 
-  test('Detect both mouse and touch events interchangeably, when using detect both option', () => {
+  it('Detect both mouse and touch events interchangeably, when using detect both option', () => {
     const touchEvent = mockTouchEvent();
     const mouseEvent = mockMouseEvent();
     const callback = jest.fn();
@@ -398,7 +409,7 @@ describe('Check appropriate behaviour considering supplied hook options', () => 
     expect(callback).toBeCalledTimes(1);
   });
 
-  test('Triggering multiple events simultaneously does not trigger onStart and callback twice when using detect both option', () => {
+  it('Triggering multiple events simultaneously does not trigger onStart and callback twice when using detect both option', () => {
     const touchEvent = mockTouchEvent();
     const mouseEvent = mockMouseEvent();
     const callback = jest.fn();
@@ -423,7 +434,7 @@ describe('Check appropriate behaviour considering supplied hook options', () => 
   });
 
   describe('Cancel on movement', () => {
-    test('Should not cancel on movement when appropriate option is set to false', () => {
+    it('Should not cancel on movement when appropriate option is set to false', () => {
       const touchEvent = mockTouchEvent({
         touches: [{ pageX: 0, pageY: 0 }] as unknown as React.TouchList,
       });
@@ -454,7 +465,7 @@ describe('Check appropriate behaviour considering supplied hook options', () => 
       expect(callback).toBeCalledTimes(2);
     });
 
-    test('Should cancel on movement when appropriate option is set to true', () => {
+    it('Should cancel on movement when appropriate option is set to true', () => {
       const touchEvent = mockTouchEvent({
         touches: [{ pageX: 0, pageY: 0 }] as unknown as React.TouchList,
       });
@@ -467,8 +478,12 @@ describe('Check appropriate behaviour considering supplied hook options', () => 
         pageY: Number.MAX_SAFE_INTEGER,
       });
       const callback = jest.fn();
+      const onMove = jest.fn();
+      const onCancel = jest.fn();
       const component = createShallowTestComponent({
         callback,
+        onMove,
+        onCancel,
         cancelOnMovement: true,
       });
 
@@ -477,15 +492,27 @@ describe('Check appropriate behaviour considering supplied hook options', () => 
       jest.runOnlyPendingTimers();
       component.props().onTouchEnd(touchEvent);
       expect(callback).toBeCalledTimes(0);
+      expect(onMove).toBeCalledTimes(1);
+      expect(onMove).toBeCalledWith(moveTouchEvent, {});
+      expect(onCancel).toBeCalledTimes(1);
+      expect(onCancel).toBeCalledWith(moveTouchEvent, { reason: LongPressEventReason.CANCELED_BY_MOVEMENT });
+
+      callback.mockReset();
+      onMove.mockReset();
+      onCancel.mockReset();
 
       component.props().onMouseDown(mouseEvent);
       component.props().onMouseMove(moveMouseEvent);
       jest.runOnlyPendingTimers();
       component.props().onMouseUp(mouseEvent);
       expect(callback).toBeCalledTimes(0);
+      expect(onMove).toBeCalledTimes(1);
+      expect(onMove).toBeCalledWith(moveMouseEvent, {});
+      expect(onCancel).toBeCalledTimes(1);
+      expect(onCancel).toBeCalledWith(moveMouseEvent, { reason: LongPressEventReason.CANCELED_BY_MOVEMENT });
     });
 
-    test('Should not cancel when within explicitly set movement tolerance', () => {
+    it('Should not cancel when within explicitly set movement tolerance', () => {
       const tolerance = 10;
       const touchEvent = mockTouchEvent({
         touches: [{ pageX: 0, pageY: 0 }] as unknown as React.TouchList,
@@ -499,8 +526,10 @@ describe('Check appropriate behaviour considering supplied hook options', () => 
         pageY: tolerance,
       });
       const callback = jest.fn();
+      const onMove = jest.fn();
       const component = createShallowTestComponent({
         callback,
+        onMove,
         cancelOnMovement: tolerance,
       });
 
@@ -509,15 +538,22 @@ describe('Check appropriate behaviour considering supplied hook options', () => 
       jest.runOnlyPendingTimers();
       component.props().onTouchEnd(touchEvent);
       expect(callback).toBeCalledTimes(1);
+      expect(onMove).toBeCalledTimes(1);
+      expect(onMove).toBeCalledWith(moveTouchEvent, {});
+
+      callback.mockReset();
+      onMove.mockReset();
 
       component.props().onMouseDown(mouseEvent);
       component.props().onMouseMove(moveMouseEvent);
       jest.runOnlyPendingTimers();
       component.props().onMouseUp(mouseEvent);
-      expect(callback).toBeCalledTimes(2);
+      expect(callback).toBeCalledTimes(1);
+      expect(onMove).toBeCalledTimes(1);
+      expect(onMove).toBeCalledWith(moveMouseEvent, {});
     });
 
-    test('Should cancel when moved outside explicitly set movement tolerance', () => {
+    it('Should cancel when moved outside explicitly set movement tolerance', () => {
       const tolerance = 10;
       const touchEvent = mockTouchEvent({
         touches: [{ pageX: 0, pageY: 0 }] as unknown as React.TouchList,
@@ -531,8 +567,12 @@ describe('Check appropriate behaviour considering supplied hook options', () => 
         pageY: 2 * tolerance,
       });
       const callback = jest.fn();
+      const onMove = jest.fn();
+      const onCancel = jest.fn();
       const component = createShallowTestComponent({
         callback,
+        onMove,
+        onCancel,
         cancelOnMovement: tolerance,
       });
 
@@ -540,13 +580,27 @@ describe('Check appropriate behaviour considering supplied hook options', () => 
       component.props().onTouchMove(moveTouchEvent);
       jest.runOnlyPendingTimers();
       component.props().onTouchEnd(touchEvent);
+
       expect(callback).toBeCalledTimes(0);
+      expect(onMove).toBeCalledTimes(1);
+      expect(onMove).toBeCalledWith(moveTouchEvent, {});
+      expect(onCancel).toBeCalledTimes(1);
+      expect(onCancel).toBeCalledWith(moveTouchEvent, { reason: LongPressEventReason.CANCELED_BY_MOVEMENT });
+
+      callback.mockReset();
+      onMove.mockReset();
+      onCancel.mockReset();
 
       component.props().onMouseDown(mouseEvent);
       component.props().onMouseMove(moveMouseEvent);
       jest.runOnlyPendingTimers();
       component.props().onMouseUp(mouseEvent);
+
       expect(callback).toBeCalledTimes(0);
+      expect(onMove).toBeCalledTimes(1);
+      expect(onMove).toBeCalledWith(moveMouseEvent, {});
+      expect(onCancel).toBeCalledTimes(1);
+      expect(onCancel).toBeCalledWith(moveMouseEvent, { reason: LongPressEventReason.CANCELED_BY_MOVEMENT });
     });
   });
 
@@ -597,6 +651,258 @@ describe('Check appropriate behaviour considering supplied hook options', () => 
     expect(onCancel).toBeCalledTimes(0);
   });
 });
+describe('Hook returned binder', () => {
+  let mouseEvent: React.MouseEvent = mockMouseEvent({ persist: jest.fn() });
+  let touchEvent: React.TouchEvent = mockTouchEvent({ persist: jest.fn() });
+  let threshold: number;
+  let callback: LongPressCallback;
+  let onStart: LongPressCallback;
+  let onFinish: LongPressCallback;
+  let onCancel: LongPressCallback;
+
+  beforeEach(() => {
+    // Use fake timers for detecting long press
+    jest.useFakeTimers();
+    // Setup common variables
+    mouseEvent = mockMouseEvent({ persist: jest.fn() });
+    touchEvent = mockTouchEvent({ persist: jest.fn() });
+    threshold = Math.round(Math.random() * 1000);
+    callback = jest.fn();
+    onStart = jest.fn();
+    onFinish = jest.fn();
+    onCancel = jest.fn();
+  });
+
+  afterEach(() => {
+    jest.clearAllMocks();
+    jest.clearAllTimers();
+  });
+
+  it.each([
+    [LongPressDetectEvents.MOUSE, mouseEvent],
+    [LongPressDetectEvents.TOUCH, touchEvent],
+  ])('should be able to retrieve passed context on %s events', (detectType, event) => {
+    const onMove: LongPressCallback = jest.fn();
+    const context = {
+      data: {
+        foo: 'bar',
+      },
+    };
+    const component = createShallowTestComponent({
+      callback,
+      context,
+      onStart,
+      onMove,
+      onFinish,
+      onCancel,
+      threshold,
+      detect: detectType,
+    });
+
+    if (detectType === LongPressDetectEvents.MOUSE && isMouseEvent(event)) {
+      component.props().onMouseDown(event);
+      jest.runOnlyPendingTimers();
+      component.props().onMouseMove(event);
+      jest.runOnlyPendingTimers();
+      component.props().onMouseUp(event);
+    } else if (detectType === LongPressDetectEvents.TOUCH && isTouchEvent(event)) {
+      component.props().onTouchStart(event);
+      jest.runOnlyPendingTimers();
+      component.props().onTouchMove(event);
+      jest.runOnlyPendingTimers();
+      component.props().onTouchEnd(event);
+    }
+
+    expect(callback).toHaveBeenCalledTimes(1);
+    expect(callback).toHaveBeenCalledWith(event, { context });
+
+    expect(onStart).toHaveBeenCalledTimes(1);
+    expect(onStart).toHaveBeenCalledWith(event, { context });
+
+    expect(onMove).toHaveBeenCalledTimes(1);
+    expect(onMove).toHaveBeenCalledWith(event, { context });
+
+    expect(onFinish).toHaveBeenCalledTimes(1);
+    expect(onFinish).toHaveBeenCalledWith(event, { context });
+
+    expect(onCancel).toHaveBeenCalledTimes(0);
+  });
+
+  it.each([
+    [LongPressDetectEvents.MOUSE, mouseEvent],
+    [LongPressDetectEvents.TOUCH, touchEvent],
+  ])('should only receive last passed context on %s events', (detectType, event) => {
+    const onMove: LongPressCallback = jest.fn();
+    let i = 1;
+    const getContext = () => ({
+      data: {
+        test: i++,
+      },
+    });
+
+    const context1 = getContext();
+    const context2 = getContext();
+    const context3 = getContext();
+
+    const component = createShallowTestComponent({
+      callback,
+      context: context1,
+      onStart,
+      onMove,
+      onFinish,
+      onCancel,
+      detect: detectType,
+    });
+
+    if (detectType === LongPressDetectEvents.MOUSE && isMouseEvent(event)) {
+      component.props().onMouseDown(event);
+      component.setProps({ context: context2 });
+      component.props().onMouseMove(event);
+      jest.runOnlyPendingTimers();
+      component.setProps({ context: context3 });
+      component.props().onMouseUp(event);
+    } else if (detectType === LongPressDetectEvents.TOUCH && isTouchEvent(event)) {
+      component.props().onTouchStart(event);
+      component.setProps({ context: context2 });
+      component.props().onTouchMove(event);
+      jest.runOnlyPendingTimers();
+      component.setProps({ context: context3 });
+      component.props().onTouchEnd(event);
+    }
+
+    expect(callback).toHaveBeenCalledTimes(1);
+    expect(callback).toHaveBeenCalledWith(event, { context: context1 });
+
+    expect(onStart).toHaveBeenCalledTimes(1);
+    expect(onStart).toHaveBeenCalledWith(event, { context: context1 });
+
+    expect(onMove).toHaveBeenCalledTimes(1);
+    expect(onMove).toHaveBeenCalledWith(event, { context: context2 });
+
+    expect(onFinish).toHaveBeenCalledTimes(1);
+    expect(onFinish).toHaveBeenCalledWith(event, { context: context3 });
+
+    expect(onCancel).toHaveBeenCalledTimes(0);
+  });
+
+  it.each([
+    [LongPressDetectEvents.MOUSE, mouseEvent],
+    [LongPressDetectEvents.TOUCH, touchEvent],
+  ])(
+    'should pass context along with reason when onCancel is called because of a timeout for %s events',
+    (detectType, event) => {
+      const onMove: LongPressCallback = jest.fn();
+      const context = {
+        data: {
+          foo: 'bar',
+        },
+      };
+      const component = createShallowTestComponent({
+        callback,
+        context,
+        onStart,
+        onMove,
+        onFinish,
+        onCancel,
+        threshold,
+        detect: detectType,
+      });
+
+      if (detectType === LongPressDetectEvents.MOUSE && isMouseEvent(event)) {
+        component.props().onMouseDown(event);
+        jest.advanceTimersByTime(Math.round(threshold / 2));
+        component.props().onMouseMove(event);
+        component.props().onMouseLeave(event);
+      } else if (detectType === LongPressDetectEvents.TOUCH && isTouchEvent(event)) {
+        component.props().onTouchStart(event);
+        jest.advanceTimersByTime(Math.round(threshold / 2));
+        component.props().onTouchMove(event);
+        component.props().onTouchEnd(event);
+      }
+
+      expect(callback).toHaveBeenCalledTimes(0);
+
+      expect(onStart).toHaveBeenCalledTimes(1);
+      expect(onStart).toHaveBeenCalledWith(event, { context });
+
+      expect(onMove).toHaveBeenCalledTimes(1);
+      expect(onMove).toHaveBeenCalledWith(event, { context });
+
+      expect(onFinish).toHaveBeenCalledTimes(0);
+
+      expect(onCancel).toHaveBeenCalledTimes(1);
+      expect(onCancel).toHaveBeenCalledWith(event, { context, reason: LongPressEventReason.CANCELED_BY_TIMEOUT });
+    }
+  );
+
+  it.each([
+    [
+      LongPressDetectEvents.MOUSE,
+      mouseEvent,
+      mockMouseEvent({
+        pageX: Number.MAX_SAFE_INTEGER,
+        pageY: Number.MAX_SAFE_INTEGER,
+      }),
+    ],
+    [
+      LongPressDetectEvents.TOUCH,
+      touchEvent,
+      mockTouchEvent({
+        touches: [{ pageX: Number.MAX_SAFE_INTEGER, pageY: Number.MAX_SAFE_INTEGER }] as unknown as React.TouchList,
+      }),
+    ],
+  ])(
+    'should pass context along with reason when onCancel is called because of a movement for %s events',
+    (detectType, event, moveEvent) => {
+      const onMove: LongPressCallback = jest.fn();
+      const context = {
+        data: {
+          foo: 'bar',
+        },
+      };
+
+      const component = createShallowTestComponent({
+        callback,
+        context,
+        onStart,
+        onMove,
+        onFinish,
+        onCancel,
+        threshold,
+        cancelOnMovement: true,
+        detect: detectType,
+      });
+
+      if (detectType === LongPressDetectEvents.MOUSE && isMouseEvent(event) && isMouseEvent(moveEvent)) {
+        component.props().onMouseDown(event);
+        jest.advanceTimersByTime(Math.round(threshold / 2));
+        component.props().onMouseMove(moveEvent);
+        component.props().onMouseUp(event);
+      } else if (detectType === LongPressDetectEvents.TOUCH && isTouchEvent(event) && isTouchEvent(moveEvent)) {
+        component.props().onTouchStart(event);
+        jest.advanceTimersByTime(Math.round(threshold / 2));
+        component.props().onTouchMove(moveEvent);
+        component.props().onTouchEnd(event);
+      }
+
+      expect(callback).toHaveBeenCalledTimes(0);
+
+      expect(onStart).toHaveBeenCalledTimes(1);
+      expect(onStart).toHaveBeenCalledWith(event, { context });
+
+      expect(onMove).toHaveBeenCalledTimes(1);
+      expect(onMove).toHaveBeenCalledWith(moveEvent, { context });
+
+      expect(onFinish).toHaveBeenCalledTimes(0);
+
+      expect(onCancel).toHaveBeenCalledTimes(1);
+      expect(onCancel).toHaveBeenCalledWith(moveEvent, {
+        context,
+        reason: LongPressEventReason.CANCELED_BY_MOVEMENT,
+      });
+    }
+  );
+});
 
 describe('Test general hook behaviour inside a component', () => {
   beforeEach(() => {
@@ -608,7 +914,7 @@ describe('Test general hook behaviour inside a component', () => {
     jest.clearAllMocks();
   });
 
-  test('Callback is called repetitively on multiple long presses', () => {
+  it('Callback is called repetitively on multiple long presses', () => {
     const touchEvent = mockTouchEvent();
     const callback = jest.fn();
     const component = createShallowTestComponent({ callback });
@@ -632,7 +938,7 @@ describe('Test general hook behaviour inside a component', () => {
     expect(callback).toBeCalledTimes(3);
   });
 
-  test('Timer is destroyed when component unmount', () => {
+  it('Timer is destroyed when component unmount', () => {
     const mouseEvent = mockMouseEvent();
     const callback = jest.fn();
     const onStart = jest.fn();
@@ -659,7 +965,7 @@ describe('Test general hook behaviour inside a component', () => {
     expect(callback).toHaveBeenCalledTimes(0);
   });
 
-  test('Callbacks are not triggered when callback change to null after click / tap', () => {
+  it('Callbacks are not triggered when callback change to null after click / tap', () => {
     const mouseEvent = mockMouseEvent();
     const callback = jest.fn();
     const onStart = jest.fn();
@@ -697,7 +1003,7 @@ describe('Test general hook behaviour inside a component', () => {
     expect(onCancel).toBeCalledTimes(0);
   });
 
-  test('Cancel event is not called simply on mouse leave', () => {
+  it('Cancel event is not called simply on mouse leave', () => {
     const mouseEvent = mockMouseEvent();
     const callback = jest.fn();
     const onCancel = jest.fn();
@@ -712,7 +1018,7 @@ describe('Test general hook behaviour inside a component', () => {
     expect(onCancel).toBeCalledTimes(0);
   });
 
-  test('Hook is not failing when invalid event was sent to the handler', () => {
+  it('Hook is not failing when invalid event was sent to the handler', () => {
     const fakeEvent = new ErrorEvent('invalid');
     const callback = jest.fn();
     const component = createShallowTestComponent({ callback, cancelOnMovement: true });
