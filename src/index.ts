@@ -71,6 +71,7 @@ export function useLongPress<
     captureEvent = false,
     detect = LongPressDetectEvents.BOTH,
     cancelOnMovement = false,
+    filterEvents,
     onStart,
     onMove,
     onFinish,
@@ -95,6 +96,11 @@ export function useLongPress<
         return;
       }
 
+      // If we don't want all events to trigger long press and provided event is filtered out
+      if (filterEvents !== undefined && !filterEvents(event)) {
+        return;
+      }
+
       startPosition.current = getCurrentPosition(event);
 
       if (captureEvent) {
@@ -113,7 +119,7 @@ export function useLongPress<
         }
       }, threshold);
     },
-    [captureEvent, onStart, threshold]
+    [captureEvent, filterEvents, onStart, threshold]
   );
 
   const cancel = useCallback(

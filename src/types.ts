@@ -63,6 +63,7 @@ export interface LongPressOptions<Target = Element, Context = unknown> {
   threshold?: number;
   captureEvent?: boolean;
   detect?: LongPressDetectEvents;
+  filterEvents?: (event: LongPressEvent<Target>) => boolean;
   cancelOnMovement?: boolean | number;
   onStart?: LongPressCallback<Target, Context>;
   onMove?: LongPressCallback<Target, Context>;
