@@ -219,3 +219,6 @@ export function useLongPress<
     return result;
   }, [callback, cancel, detect, handleMove, start]);
 }
+
+// Export all typings
+export * from './types';
