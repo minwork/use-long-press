@@ -40,9 +40,15 @@ const Example = () => {
 };
 ```
 
-## Live example (v1)
+## Live example
+
+### Version 1
 
 [![Edit useLongPress](https://codesandbox.io/static/img/play-codesandbox.svg)](https://codesandbox.io/s/uselongpress-gnej6?fontsize=14&hidenavigation=1&theme=dark)
+
+### Version 2
+
+[![Edit useLongPress](https://codesandbox.io/static/img/play-codesandbox.svg)](https://codesandbox.io/s/uselongpress-v2-ekqecn?fontsize=14&hidenavigation=1&theme=dark)
 
 ## Advanced usage
 
