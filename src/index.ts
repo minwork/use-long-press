@@ -19,12 +19,12 @@ export function useLongPress<Target = Element, Context = unknown>(
 ): CallableContextResult<EmptyObject, Context>;
 export function useLongPress<
   Target = Element,
-  Callback extends LongPressCallback<Target> = LongPressCallback<Target>,
+  Callback extends LongPressCallback<Target, any> = LongPressCallback<Target>,
   Context = unknown
 >(callback: Callback, options?: LongPressOptions<Target>): CallableContextResult<LongPressResult<Target>, Context>;
 export function useLongPress<
   Target = Element,
-  Callback extends LongPressCallback<Target> = LongPressCallback<Target>,
+  Callback extends LongPressCallback<Target, any> = LongPressCallback<Target>,
   Context = unknown
 >(
   callback: Callback | null,
