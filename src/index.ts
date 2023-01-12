@@ -18,14 +18,14 @@ export function useLongPress<Target = Element, Context = unknown>(
   options?: LongPressOptions<Target>
 ): CallableContextResult<EmptyObject, Context>;
 export function useLongPress<
+  Context = unknown,
   Target = Element,
-  Callback extends LongPressCallback<Target, any> = LongPressCallback<Target>,
-  Context = unknown
+  Callback extends LongPressCallback<Target, Context> = LongPressCallback<Target, Context>
 >(callback: Callback, options?: LongPressOptions<Target>): CallableContextResult<LongPressResult<Target>, Context>;
 export function useLongPress<
+  Context = unknown,
   Target = Element,
-  Callback extends LongPressCallback<Target, any> = LongPressCallback<Target>,
-  Context = unknown
+  Callback extends LongPressCallback<Target, Context> = LongPressCallback<Target, Context>
 >(
   callback: Callback | null,
   options?: LongPressOptions<Target>
@@ -61,9 +61,9 @@ export function useLongPress<
  * </ul>
  */
 export function useLongPress<
+  Context extends unknown = undefined,
   Target extends Element = Element,
-  Callback extends LongPressCallback<Target> = LongPressCallback<Target>,
-  Context extends unknown = undefined
+  Callback extends LongPressCallback<Target, Context> = LongPressCallback<Target, Context>
 >(
   callback: Callback | null,
   {
