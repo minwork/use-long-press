@@ -23,4 +23,4 @@ jobs:
         stale-issue-label: 'stale'
         days-before-issue-stale: 14
         days-before-pr-stale: -1
-        exempt-issue-labels: 'pinned,security'
+        exempt-issue-labels: 'pinned,security,next'
