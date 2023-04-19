@@ -18,9 +18,9 @@ Version 3 is now available on the `next` channel.
 
 Use `yarn add use-long-press@next` or `npm install --save use-long-press@next` to install it.
 
-Everything went through general refactor, and now `useLongPress` supports Pointer Events, properly handles releasing long press anywhere on the page and [more...](https://github.com/minwork/react/blob/next/packages/use-long-press/README.md)
+Everything went through general refactor, and now `useLongPress` supports Pointer Events, properly handles releasing long press anywhere on the page and [more...](https://github.com/minwork/react/tree/main/packages/use-long-press)
 
-Also `use-long-press` package is migrating to new [react libraries monorepo](https://github.com/minwork/react/tree/next) which will be a common place for different react hooks and components coming in the future...
+Also `use-long-press` package is migrating to new [react libraries monorepo](https://github.com/minwork/react) which will be a common place for different react hooks and components coming in the future...
 
 ## Install
 
