@@ -14,9 +14,10 @@
 - Thoroughly tested
 
 ## 🎉 Version 3 is now available!
-Version 3 is now available on the `next` channel.
 
-Use `yarn add use-long-press@next` or `npm install --save use-long-press@next` to install it.
+⚠️ Version 1 and 2 is now deprecated ([explanation](https://github.com/minwork/react/blob/main/packages/use-long-press/README.md#faq)).
+
+Use `yarn add use-long-press@latest` or `npm install --save use-long-press@latest` to install it.
 
 Everything went through general refactor, and now `useLongPress` supports Pointer Events, properly handles releasing long press anywhere on the page and [more...](https://github.com/minwork/react/tree/main/packages/use-long-press)
 
